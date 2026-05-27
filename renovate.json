@@ -1,0 +1,15 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@nuxtjs/i18n", "@nuxtjs/sitemap", "nuxt"],
+      "groupName": "nuxt-ecosystem",
+      "schedule": ["before 6am on monday"]
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  }
+}

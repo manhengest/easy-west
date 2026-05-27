@@ -1,0 +1,19 @@
+/**
+ * Shared SEO for static legal / accessibility pages.
+ * x-default canonical target is /ua/ (primary market).
+ */
+export function usePageSeo(titleKey: string) {
+  const { t } = useI18n()
+  const config = useRuntimeConfig()
+
+  useLocaleHead({ seo: true })
+
+  useSeoMeta({
+    title: () => t(titleKey),
+    description: () => t('seo.description'),
+    ogTitle: () => t(titleKey),
+    ogDescription: () => t('seo.description'),
+    ogImage: () => `${config.public.siteUrl}/og/og-default.jpg`,
+    twitterCard: 'summary_large_image',
+  })
+}

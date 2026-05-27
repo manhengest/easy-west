@@ -1,0 +1,19 @@
+.ui-icon {
+  display: inline-block;
+  flex-shrink: 0;
+
+  &_sm {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &_md {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  &_lg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}

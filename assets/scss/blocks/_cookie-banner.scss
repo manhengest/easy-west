@@ -1,0 +1,31 @@
+.cookie-banner {
+  @apply fixed bottom-4 right-4 z-40 w-[min(100vw-2rem,28rem)] rounded-[1.75rem] bg-white p-6 shadow-[0_12px_40px_rgb(15_18_22_/_12%)] sm:p-8;
+
+  &__title {
+    @apply text-lg font-bold leading-snug text-foreground;
+  }
+
+  &__text {
+    @apply mt-2 text-sm leading-relaxed text-[#555555];
+  }
+
+  &__link {
+    @apply font-medium text-foreground underline underline-offset-2;
+  }
+
+  &__actions {
+    @apply mt-6 flex flex-wrap items-center gap-3;
+  }
+
+  &__btn {
+    @apply rounded-2xl px-5 py-2.5 text-sm font-medium;
+
+    &.ui-button_ghost {
+      @apply border-[#e0e0e0] bg-transparent text-foreground;
+
+      &:hover {
+        @apply border-[#c8c8c8] bg-[#f5f5f5];
+      }
+    }
+  }
+}

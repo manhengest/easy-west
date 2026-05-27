@@ -1,0 +1,41 @@
+@use '../mixins' as *;
+
+.gallery-section {
+  @apply bg-surface py-14;
+
+  &__header {
+    @apply mx-auto w-full max-w-3xl px-4 text-center sm:px-6;
+  }
+
+  &__title {
+    @apply text-2xl font-semibold md:text-3xl;
+  }
+
+  &__lead {
+    @apply mt-3 text-muted-foreground;
+  }
+}
+
+.gallery-grid {
+  @apply mx-auto mt-10 grid w-full max-w-6xl gap-3 px-4 sm:grid-cols-2 sm:px-6 md:grid-cols-3;
+
+  &_fallback {
+    @apply list-none;
+  }
+
+  &__item {
+    @apply overflow-hidden rounded-[var(--radius)] border-0 bg-transparent p-0 transition-transform duration-200;
+
+    @include reduced-motion {
+      transition: none;
+    }
+
+    &:hover {
+      transform: scale(1.03);
+    }
+  }
+
+  &__img {
+    @apply h-auto w-full object-cover;
+  }
+}

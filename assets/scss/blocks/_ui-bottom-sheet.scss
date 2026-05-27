@@ -1,0 +1,23 @@
+.ui-bottom-sheet {
+  @apply rounded-t-[var(--radius)] md:max-w-lg;
+
+  &__handle {
+    @apply mx-auto mt-2 h-1 w-10 rounded-full bg-border;
+  }
+
+  &__header {
+    @apply flex items-center justify-between border-b border-border px-4 py-3;
+  }
+
+  &__title {
+    @apply text-lg font-semibold;
+  }
+
+  &__close {
+    @apply rounded p-2 text-muted-foreground hover:bg-secondary;
+  }
+
+  &__body {
+    @apply px-4 py-4;
+  }
+}

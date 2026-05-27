@@ -1,0 +1,11 @@
+.ui-overlay {
+  @apply fixed inset-0 z-50 flex items-end justify-center md:items-center;
+
+  &__backdrop {
+    @apply absolute inset-0 bg-foreground/40;
+  }
+
+  &__panel {
+    @apply relative z-10 max-h-[90dvh] w-full overflow-y-auto bg-background shadow-lg;
+  }
+}

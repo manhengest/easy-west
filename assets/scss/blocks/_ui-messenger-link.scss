@@ -1,0 +1,48 @@
+@use '../mixins' as *;
+
+.ui-messenger-link {
+  @apply inline-flex items-center gap-2 rounded-[var(--radius)] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-all duration-200;
+
+  @include reduced-motion {
+    transition: none;
+  }
+
+  &:hover {
+    @apply -translate-y-0.5 shadow-sm;
+  }
+
+  &__label {
+    @apply whitespace-nowrap;
+  }
+
+  &_whatsapp:hover {
+    @apply border-green-600/30 bg-green-50;
+  }
+
+  &_telegram:hover {
+    @apply border-sky-600/30 bg-sky-50;
+  }
+
+  &_viber:hover {
+    @apply border-purple-600/30 bg-purple-50;
+  }
+
+  &_phone:hover {
+    @apply border-primary/30 bg-accent;
+  }
+
+  &_on-dark {
+    @apply border-white/80 bg-transparent text-white;
+
+    &:hover {
+      @apply translate-y-0 border-white bg-white/12 shadow-none;
+    }
+
+    &.ui-messenger-link_whatsapp:hover,
+    &.ui-messenger-link_telegram:hover,
+    &.ui-messenger-link_viber:hover,
+    &.ui-messenger-link_phone:hover {
+      @apply border-white bg-white/12 text-white;
+    }
+  }
+}

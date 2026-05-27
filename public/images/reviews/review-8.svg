@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="640" viewBox="0 0 360 640">
+  <rect width="360" height="640" fill="#e3f2fd"/>
+  <rect x="24" y="104" width="248" height="52" rx="8" fill="#fff"/>
+  <rect x="48" y="184" width="210" height="92" rx="12" fill="#90caf9"/>
+  <rect x="56" y="296" width="198" height="68" rx="12" fill="#e1f5fe"/>
+  <text x="180" y="540" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#5e646c">Telegram</text>
+</svg>

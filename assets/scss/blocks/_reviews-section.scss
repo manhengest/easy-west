@@ -1,0 +1,57 @@
+.reviews-section {
+  @apply py-14;
+
+  &__header {
+    @apply mx-auto w-full max-w-3xl px-4 text-center sm:px-6;
+  }
+
+  &__title {
+    @apply text-2xl font-semibold md:text-3xl;
+  }
+
+  &__lead {
+    @apply mt-3 text-muted-foreground;
+  }
+}
+
+.reviews-carousel {
+  @apply mx-auto mt-10 w-full max-w-6xl px-4 sm:px-6;
+
+  &_fallback {
+    @apply flex list-none gap-4 overflow-x-auto;
+  }
+
+  &__viewport {
+    @apply overflow-hidden;
+    touch-action: pan-y pinch-zoom;
+  }
+
+  &__container {
+    @apply flex gap-4;
+    backface-visibility: hidden;
+  }
+
+  &__slide {
+    @apply min-w-[min(260px,78vw)] shrink-0 rounded-[var(--radius)] border border-border bg-card p-3 sm:min-w-[280px] md:min-w-[calc(33.333%-0.75rem)];
+  }
+
+  &__img {
+    @apply mx-auto h-auto max-h-[420px] w-full object-contain;
+  }
+
+  &__channel {
+    @apply mt-2 block text-center text-xs text-muted-foreground;
+  }
+
+  &__controls {
+    @apply mt-4 flex justify-center gap-2;
+  }
+
+  &__btn {
+    @apply flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-border bg-card;
+
+    &:disabled {
+      @apply cursor-not-allowed opacity-40;
+    }
+  }
+}

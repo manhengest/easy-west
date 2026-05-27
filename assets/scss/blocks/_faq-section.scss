@@ -1,0 +1,15 @@
+.faq-section {
+  @apply bg-surface py-14;
+
+  &__header {
+    @apply mx-auto w-full max-w-3xl px-4 text-center sm:px-6;
+  }
+
+  &__title {
+    @apply text-2xl font-semibold md:text-3xl;
+  }
+
+  &__body {
+    @apply mx-auto mt-10 w-full max-w-3xl px-4 sm:px-6;
+  }
+}

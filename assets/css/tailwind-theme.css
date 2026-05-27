@@ -1,0 +1,25 @@
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --radius: 0.875rem;
+  --color-background: #ffffff;
+  --color-surface: #f6f8fa;
+  --color-foreground: #0f1216;
+  --color-card: #ffffff;
+  --color-card-foreground: #0f1216;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0f1216;
+  --color-primary: #df202e;
+  --color-primary-foreground: #fcfcfc;
+  --color-primary-dark: #97000f;
+  --color-secondary: #f1f3f7;
+  --color-secondary-foreground: #181b1f;
+  --color-muted: #f1f3f7;
+  --color-muted-foreground: #5e646c;
+  --color-accent: #fceae8;
+  --color-accent-foreground: #97000f;
+  --color-destructive: #e7000b;
+  --color-destructive-foreground: #f8fafc;
+  --color-border: #e3e5e8;
+  --color-input: #e3e5e8;
+  --color-ring: #df202e;
+}

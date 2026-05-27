@@ -1,0 +1,19 @@
+.ui-modal {
+  @apply max-w-lg rounded-[var(--radius)] md:mx-4;
+
+  &__header {
+    @apply flex items-center justify-between border-b border-border px-5 py-4;
+  }
+
+  &__title {
+    @apply text-xl font-semibold;
+  }
+
+  &__close {
+    @apply rounded p-2 text-muted-foreground hover:bg-secondary;
+  }
+
+  &__body {
+    @apply px-5 py-5;
+  }
+}

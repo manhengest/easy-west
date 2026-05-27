@@ -1,0 +1,61 @@
+.site-footer {
+  @apply bg-[#f5f5f5] py-12 text-sm text-[#555555];
+
+  &__inner {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+  }
+
+  &__grid {
+    @apply grid gap-10 md:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)] lg:gap-12;
+  }
+
+  &__logo-link {
+    @apply inline-block;
+  }
+
+  &__logo {
+    display: block;
+    height: 2rem;
+    width: auto;
+  }
+
+  &__description {
+    @apply mt-4 max-w-sm leading-relaxed text-[#333333];
+  }
+
+  &__heading {
+    @apply text-xs font-semibold uppercase tracking-wider text-[#888888];
+  }
+
+  &__links {
+    @apply mt-4 list-none space-y-2.5;
+
+    a {
+      @apply font-medium text-[#333333] transition-colors hover:text-primary;
+    }
+  }
+
+  &__contact-list {
+    @apply mt-4 list-none space-y-2.5;
+  }
+
+  &__contact-link {
+    @apply inline-flex items-center gap-2.5 font-medium text-[#333333] transition-colors hover:text-primary;
+  }
+
+  &__contact-icon {
+    @apply shrink-0 text-primary;
+  }
+
+  &__bar {
+    @apply mt-10 flex flex-col gap-4 border-t border-[#e0e0e0] pt-6 text-[#888888] sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  &__legal {
+    @apply flex flex-wrap gap-x-5 gap-y-2;
+
+    a {
+      @apply transition-colors hover:text-[#333333];
+    }
+  }
+}

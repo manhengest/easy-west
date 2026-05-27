@@ -1,0 +1,57 @@
+.hero {
+  @apply relative overflow-hidden bg-cover bg-center py-10 md:py-30;
+  background-image: var(--hero-bg);
+
+  &::before {
+    content: '';
+    @apply absolute inset-0 bg-black/60;
+  }
+
+  &__grid {
+    @apply relative z-10 mx-auto grid w-full max-w-6xl gap-10 px-4 sm:px-6 md:grid-cols-2 md:items-start;
+  }
+
+  &__title {
+    @apply text-3xl font-semibold text-white md:text-4xl;
+  }
+
+  &__lead {
+    @apply mt-4 max-w-xl text-white/85;
+  }
+
+  &__benefits {
+    @apply mt-6 space-y-2;
+  }
+
+  &__benefit {
+    @apply flex items-start gap-2 text-sm text-white/90 md:text-base;
+  }
+
+  &__benefit-icon {
+    @apply mt-0.5 shrink-0 text-primary;
+  }
+
+  &__messengers {
+    @apply mt-6 grid grid-cols-2 gap-2 md:flex md:flex-wrap;
+
+    .ui-messenger-link {
+      @apply w-full justify-center md:w-auto;
+    }
+  }
+
+  &__form-wrap {
+    @apply rounded-[var(--radius)] border border-border bg-card p-4 shadow-sm md:p-6;
+  }
+
+  &__form-header {
+    @apply mb-6;
+  }
+
+  &__form-title {
+    @apply text-xl font-semibold leading-tight text-foreground md:text-2xl;
+  }
+
+  &__form-note {
+    @apply mt-1 text-sm text-muted-foreground;
+  }
+}

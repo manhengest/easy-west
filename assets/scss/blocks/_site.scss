@@ -1,0 +1,23 @@
+:root {
+  --site-header-height: 4.0625rem;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--site-header-height);
+
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
+}
+
+.site {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  padding-top: var(--site-header-height);
+
+  &__main {
+    flex: 1;
+  }
+}

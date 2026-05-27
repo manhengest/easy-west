@@ -1,0 +1,140 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  width: 100%;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-background);
+  transition:
+    box-shadow $duration-fast $ease-soft,
+    border-color $duration-fast $ease-soft;
+
+  &_scrolled {
+    border-bottom-color: transparent;
+    box-shadow: 0 4px 24px rgb(15 18 22 / 8%);
+  }
+
+  &__inner {
+    @apply relative mx-auto flex h-[4.0625rem] w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8;
+  }
+
+  &__brand {
+    @apply relative z-10 shrink-0;
+  }
+
+  &__logo {
+    display: block;
+    height: 2.25rem;
+    width: auto;
+    max-width: min(11.25rem, 42vw);
+  }
+
+  &__nav {
+    @apply pointer-events-none absolute inset-x-0 hidden justify-center md:flex;
+  }
+
+  &__links {
+    @apply pointer-events-auto flex items-center gap-6 lg:gap-8;
+
+    a {
+      @apply text-sm font-medium text-[#555555] transition-colors;
+
+      &:hover {
+        @apply text-foreground;
+      }
+    }
+  }
+
+  &__actions {
+    @apply relative z-10 ml-auto flex shrink-0 items-center gap-3 sm:gap-4 md:gap-5;
+  }
+
+  &__cta.ui-button {
+    @apply hidden rounded-full px-5 py-2.5 text-sm font-medium md:inline-flex;
+  }
+
+  &__menu-toggle {
+    @apply inline-flex shrink-0 items-center justify-center rounded-[var(--radius)] p-2 text-foreground transition-colors md:hidden;
+
+    &:hover {
+      @apply bg-secondary;
+    }
+  }
+}
+
+.site-header-menu {
+  @apply fixed inset-0 z-[60];
+
+  &__backdrop {
+    @apply absolute inset-0 bg-foreground/40;
+  }
+
+  &__panel {
+    @apply absolute inset-y-0 right-0 flex w-full flex-col bg-background shadow-lg;
+  }
+
+  &__header {
+    @apply flex items-center justify-between border-b border-border px-4 py-3;
+  }
+
+  &__brand {
+    @apply shrink-0;
+  }
+
+  &__close {
+    @apply rounded p-2 text-muted-foreground transition-colors;
+
+    &:hover {
+      @apply bg-secondary;
+    }
+  }
+
+  &__links {
+    @apply flex flex-col gap-1 px-4 py-6;
+
+    a {
+      @apply block rounded-[var(--radius)] px-4 py-3 text-base font-medium text-foreground transition-colors;
+
+      &:hover {
+        @apply bg-secondary;
+      }
+    }
+  }
+
+  &__cta.ui-button {
+    @apply mx-4 mb-8 mt-auto w-[calc(100%-2rem)] rounded-full px-5 py-3 text-sm font-medium;
+  }
+}
+
+.site-header-menu-enter-active,
+.site-header-menu-leave-active {
+  .site-header-menu__backdrop {
+    transition: opacity $duration-fast $ease-soft;
+  }
+
+  .site-header-menu__panel {
+    transition: transform $duration-base $ease-soft;
+  }
+
+  @include reduced-motion {
+    .site-header-menu__backdrop,
+    .site-header-menu__panel {
+      transition: none;
+    }
+  }
+}
+
+.site-header-menu-enter-from,
+.site-header-menu-leave-to {
+  .site-header-menu__backdrop {
+    opacity: 0;
+  }
+
+  .site-header-menu__panel {
+    transform: translateX(100%);
+  }
+}

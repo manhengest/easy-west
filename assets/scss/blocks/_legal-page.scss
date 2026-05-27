@@ -1,0 +1,15 @@
+.legal-page {
+  @apply mx-auto max-w-3xl px-4 py-12;
+
+  &__title {
+    @apply text-2xl font-semibold text-foreground;
+  }
+
+  &__body {
+    @apply mt-4 text-muted-foreground;
+  }
+
+  &__meta {
+    @apply mt-8 text-sm text-muted-foreground;
+  }
+}

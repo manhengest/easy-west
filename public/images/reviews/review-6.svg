@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="640" viewBox="0 0 360 640">
+  <rect width="360" height="640" fill="#f3e5f5"/>
+  <rect x="30" y="110" width="245" height="50" rx="8" fill="#fff"/>
+  <rect x="52" y="190" width="205" height="84" rx="12" fill="#e1bee7"/>
+  <rect x="44" y="300" width="215" height="70" rx="12" fill="#f3e5f5"/>
+  <text x="180" y="540" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#5e646c">Viber</text>
+</svg>

@@ -1,0 +1,35 @@
+@use 'tokens' as tokens;
+@use 'mixins';
+@use 'blocks/site';
+@use 'blocks/site-container';
+@use 'blocks/site-header';
+@use 'blocks/site-footer';
+@use 'blocks/locale-switcher';
+@use 'blocks/legal-page';
+@use 'blocks/ui-icon';
+@use 'blocks/ui-input';
+@use 'blocks/ui-overlay';
+@use 'blocks/ui-bottom-sheet';
+@use 'blocks/ui-modal';
+@use 'blocks/ui-accordion';
+@use 'blocks/lead-form';
+@use 'blocks/cookie-banner';
+@use 'blocks/hero';
+@use 'blocks/segments';
+@use 'blocks/process';
+@use 'blocks/geography';
+@use 'blocks/gallery-section';
+@use 'blocks/reviews-section';
+@use 'blocks/faq-section';
+@use 'blocks/cta-section';
+@use 'blocks/ui-messenger-link';
+@use 'blocks/landing';
+@use 'blocks/ui-button';
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-background text-foreground font-sans antialiased;
+}

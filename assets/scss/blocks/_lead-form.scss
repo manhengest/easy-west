@@ -1,0 +1,78 @@
+.lead-form {
+  @apply flex flex-col gap-4;
+
+  &__summary {
+    @apply rounded-[var(--radius)] border border-destructive bg-accent px-3 py-2 text-sm;
+  }
+
+  &__summary-title {
+    @apply font-medium text-accent-foreground;
+  }
+
+  &__summary-list {
+    @apply mt-1 list-inside list-disc;
+  }
+
+  &__success {
+    @apply text-sm font-medium text-primary;
+  }
+
+  &__error {
+    @apply text-sm text-destructive;
+  }
+
+  &__consent {
+    @apply flex flex-col gap-1;
+  }
+
+  &__consent-label {
+    @apply flex cursor-pointer items-center gap-2;
+  }
+
+  &__checkbox {
+    @apply size-4 shrink-0 accent-primary;
+  }
+
+  &__consent-text {
+    @apply min-w-0 text-[12px] leading-snug text-muted-foreground;
+  }
+
+  &__consent-link {
+    @apply inline underline underline-offset-2;
+  }
+
+  &__consent-error {
+    @apply pl-6 text-sm text-destructive;
+  }
+
+  &__honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &__submit {
+    @apply w-full gap-2;
+  }
+
+  &_hero {
+    .lead-form__footer {
+      @apply flex flex-col items-center gap-3;
+    }
+
+    .lead-form__submit {
+      @apply py-3.5 text-base font-semibold;
+
+      .ui-icon {
+        @apply relative top-[3px];
+      }
+    }
+
+    .lead-form__footer-note {
+      @apply text-center text-sm text-muted-foreground;
+    }
+  }
+}

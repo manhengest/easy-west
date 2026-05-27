@@ -1,0 +1,15 @@
+.locale-switcher {
+  @apply flex items-center gap-1 text-sm font-medium;
+
+  &__sep {
+    @apply px-0.5 text-[#c4c8ce];
+  }
+
+  &__link {
+    @apply rounded-sm px-1 py-0.5 text-[#9aa0a8] transition-colors hover:text-foreground;
+
+    &_active {
+      @apply bg-transparent font-semibold text-foreground;
+    }
+  }
+}
