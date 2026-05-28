@@ -8,25 +8,12 @@ export const serverEnvSchema = z.object({
   NUXT_LEADS_TO_EMAIL: z.string().email(),
   NUXT_TELEGRAM_BOT_TOKEN: z.string().min(1),
   NUXT_TELEGRAM_CHAT_ID: z.string().min(1),
-  NUXT_UPSTASH_REDIS_REST_URL: z.string().url(),
-  NUXT_UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
-  NUXT_KV_REST_API_URL: z.string().url(),
-  NUXT_KV_REST_API_TOKEN: z.string().min(1),
-  NUXT_CONSENT_DB_URL: z.string().url(),
-  NUXT_PHONE_HASH_SALT: z.string().min(32),
-  NUXT_LEAD_IP_SALT: z.string().min(32),
   NUXT_TURNSTILE_SECRET: z.string().min(1),
-  NUXT_QSTASH_TOKEN: z.string().min(1),
   NUXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1),
   NUXT_PUBLIC_SITE_URL: z.string().url(),
-  NUXT_SENTRY_DSN: z.string().url(),
   NUXT_PUBLIC_GTM_ID: z.string().optional(),
   NUXT_PROD_LEADS_TO_EMAIL: z.string().email().optional(),
   NUXT_DEPLOY_ENV: deployEnvSchema.default('development'),
-  NUXT_TRUSTED_PROXY: z
-    .enum(['true', 'false'])
-    .default('false')
-    .transform(v => v === 'true'),
 })
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>

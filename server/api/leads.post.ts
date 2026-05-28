@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Invalid phone number' })
   }
 
-  // Phase 4: Turnstile verify, rate limit, consent DB, KV, QStash
+  // Phase 4: Turnstile verify, email/Telegram notify
   if (config.deployEnv === 'production' && payload.turnstileToken.startsWith('stub-')) {
     throw createError({ statusCode: 403, statusMessage: 'Turnstile verification required' })
   }

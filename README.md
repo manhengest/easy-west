@@ -8,7 +8,6 @@ Nuxt 3 landing for EASY WEST relocation services (UA/RU i18n).
 - Tailwind CSS v4 + SCSS BEM blocks (split CSS entry)
 - `@nuxtjs/i18n` v9 (`/ua/`, `/ru/`)
 - Self-hosted **Inter** via `@nuxt/fonts` local provider + `@fontsource/inter`
-- Upstash Redis/KV (portable — no Vercel-specific APIs)
 
 ## Setup
 
@@ -34,7 +33,6 @@ See [runbooks/deploy-vps.md](runbooks/deploy-vps.md) and [deploy/nginx.conf.exam
 | Variable | Purpose |
 |----------|---------|
 | `NUXT_DEPLOY_ENV` | `staging` \| `production` |
-| `NUXT_TRUSTED_PROXY` | `true` behind nginx — enables `X-Real-IP` for rate limits |
 | `NUXT_PUBLIC_SITE_URL` | Canonical / sitemap base URL |
 
 Locale files: `i18n/locales/` (`langDir: 'locales'` under the i18n module root).

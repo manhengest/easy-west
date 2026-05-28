@@ -25,7 +25,6 @@ export default defineNuxtConfig({
     '@nuxt/scripts',
     '@nuxtjs/i18n',
     '@nuxtjs/sitemap',
-    '@sentry/nuxt',
     '@vueuse/motion/nuxt',
   ],
 
@@ -109,18 +108,9 @@ export default defineNuxtConfig({
     leadsToEmail: '',
     telegramBotToken: '',
     telegramChatId: '',
-    upstashRedisRestUrl: '',
-    upstashRedisRestToken: '',
-    kvRestApiUrl: '',
-    kvRestApiToken: '',
-    consentDbUrl: '',
-    phoneHashSalt: '',
-    leadIpSalt: '',
     turnstileSecret: '',
-    qstashToken: '',
     prodLeadsToEmail: '',
     deployEnv: process.env.NUXT_DEPLOY_ENV ?? 'development',
-    trustedProxy: process.env.NUXT_TRUSTED_PROXY === 'true',
     public: {
       siteUrl: '',
       turnstileSiteKey: '',
@@ -167,9 +157,5 @@ export default defineNuxtConfig({
         },
       },
     },
-  },
-
-  sentry: {
-    enabled: Boolean(process.env.NUXT_SENTRY_DSN),
   },
 })

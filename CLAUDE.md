@@ -36,7 +36,7 @@ NODE_ENV=production pnpm start
 | Framework | Nuxt 3 + Vue 3 + TypeScript |
 | Styling | Tailwind CSS v4 + SCSS (BEM blocks, split CSS entry) |
 | i18n | `@nuxtjs/i18n` v9 — prefix routes `/ua/`, `/ru/` |
-| Deploy | Nitro `node-server` (VPS + nginx); portable KV (Upstash) |
+| Deploy | Nitro `node-server` (VPS + nginx) |
 | Forms | VeeValidate + Zod; `libphonenumber-js` for phone |
 | Fonts | Self-hosted Inter (`@nuxt/fonts`, `@fontsource/inter`) |
 

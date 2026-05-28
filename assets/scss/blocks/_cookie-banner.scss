@@ -14,11 +14,11 @@
   }
 
   &__actions {
-    @apply mt-6 flex flex-wrap items-center gap-3;
+    @apply mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center;
   }
 
   &__btn {
-    @apply rounded-2xl px-5 py-2.5 text-sm font-medium;
+    @apply w-full justify-center rounded-2xl px-5 py-2.5 text-sm font-medium sm:w-auto;
 
     &.ui-button_ghost {
       @apply border-[#e0e0e0] bg-transparent text-foreground;
