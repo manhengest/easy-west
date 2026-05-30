@@ -1,5 +1,5 @@
 .cookie-banner {
-  @apply fixed bottom-4 right-4 z-40 w-[min(100vw-2rem,28rem)] rounded-[1.75rem] bg-white p-6 shadow-[0_12px_40px_rgb(15_18_22_/_12%)] sm:p-8;
+  @apply fixed bottom-4 right-4 z-40 w-[min(100vw-2rem,28rem)] rounded-[1.75rem] bg-white p-3 shadow-[0_12px_40px_rgb(15_18_22_/_12%)] sm:p-6;
 
   &__title {
     @apply text-lg font-bold leading-snug text-foreground;

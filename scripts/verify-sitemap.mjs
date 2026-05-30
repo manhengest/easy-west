@@ -1,5 +1,5 @@
 /**
- * Smoke-check sitemap includes locale-prefixed legal + accessibility URLs.
+ * Smoke-check sitemap includes UA (unprefixed) + RU locale URLs.
  * Usage:
  *   node scripts/verify-sitemap.mjs [baseUrl]     — fetch live server
  *   node scripts/verify-sitemap.mjs --prerender   — read .output/public after build
@@ -8,13 +8,27 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const required = [
-  '/ua',
+  '/',
   '/ru',
-  '/ua/privacy',
+  '/privacy',
   '/ru/privacy',
-  '/ua/accessibility',
+  '/accessibility',
   '/ru/accessibility',
 ]
+
+function prerenderHtmlPath(route) {
+  if (route === '/') {
+    return resolve('.output/public/index.html')
+  }
+  const segments = route.split('/').filter(Boolean)
+  if (segments[0] === 'ru') {
+    const page = segments[1]
+    return page
+      ? resolve(`.output/public/ru/${page}/index.html`)
+      : resolve('.output/public/ru/index.html')
+  }
+  return resolve(`.output/public/${segments[0]}/index.html`)
+}
 
 const mode = process.argv[2]
 let xml
@@ -22,15 +36,7 @@ let xml
 if (mode === '--prerender') {
   const path = resolve('.output/public/sitemap.xml')
   if (!existsSync(path)) {
-    // sitemap index or dynamic — check prerendered HTML paths exist
-    const ok = required.every((p) => {
-      const locale = p.split('/')[1]
-      const page = p.split('/')[2]
-      const html = page
-        ? resolve(`.output/public/${locale}/${page}/index.html`)
-        : resolve(`.output/public/${locale}/index.html`)
-      return existsSync(html)
-    })
+    const ok = required.every(p => existsSync(prerenderHtmlPath(p)))
     if (!ok) {
       console.error('prerender: missing locale HTML for', required.join(', '))
       process.exit(1)

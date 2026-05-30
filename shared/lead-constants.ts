@@ -1,5 +1,7 @@
 export const CONSENT_POLICY_VERSION = '2026-05-27'
 
+export const LEAD_TURNSTILE_ACTION = 'lead_submit'
+
 export const LEAD_SOURCES = [
   'hero',
   'header',

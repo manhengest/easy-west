@@ -38,7 +38,7 @@ pm2 start .output/server/index.mjs --name easy-west --env production
 
 ## Static prerender
 
-Locale routes under `/ua/**` and `/ru/**` are prerendered at build time; API routes (`/api/**`) stay dynamic.
+UA routes (`/`, `/privacy`, …) and `/ru/**` are prerendered at build time; API routes (`/api/**`) stay dynamic.
 
 ## Monitoring
 

@@ -25,7 +25,7 @@
       {{ t('lead.success') }}
     </p>
     <p v-else-if="submitError" class="lead-form__error" role="alert">
-      {{ t('lead.errors.submit') }}
+      {{ submitError === 'captcha' ? t('lead.errors.captcha') : t('lead.errors.submit') }}
     </p>
 
     <UiInput
@@ -95,6 +95,8 @@
       aria-hidden="true"
     >
 
+    <UiTurnstile ref="turnstileRef" />
+
     <div v-if="source === 'hero'" class="lead-form__footer">
       <UiButton
         type="submit"
@@ -133,6 +135,11 @@ const props = defineProps<{
 const { t } = useI18n()
 const localePath = useLocalePath()
 const honeypot = ref('')
+const turnstileRef = ref<{
+  enabled: boolean
+  token: string
+  reset: () => void
+} | null>(null)
 
 const {
   from,
@@ -149,7 +156,7 @@ const {
   submitError,
   submitSuccess,
   onSubmit: baseSubmit,
-} = useLeadForm(props.source)
+} = useLeadForm(props.source, turnstileRef)
 
 const onSubmit = (event: Event) => {
   if (honeypot.value) {

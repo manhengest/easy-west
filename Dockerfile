@@ -20,5 +20,5 @@ COPY --from=build --chown=nuxt:nodejs /app/.output ./.output
 USER nuxt
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s \
-  CMD node -e "fetch('http://127.0.0.1:3000/ua/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+  CMD node -e "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", ".output/server/index.mjs"]

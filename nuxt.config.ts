@@ -7,11 +7,11 @@ if (process.env.NODE_ENV !== 'test' && process.env.SKIP_ENV_VALIDATION !== 'true
 
 const siteUrl = process.env.NUXT_PUBLIC_SITE_URL!
 
-const localeCodes = ['ua', 'ru'] as const
 const staticPages = ['', 'privacy', 'cookies', 'terms', 'accessibility'] as const
-const prerenderRoutes = localeCodes.flatMap(locale =>
-  staticPages.map(page => (page ? `/${locale}/${page}` : `/${locale}`)),
-)
+const prerenderRoutes = [
+  ...staticPages.map(page => (page ? `/${page}` : '/')),
+  ...staticPages.map(page => (page ? `/ru/${page}` : '/ru')),
+]
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -44,7 +44,7 @@ export default defineNuxtConfig({
   },
 
   i18n: {
-    strategy: 'prefix',
+    strategy: 'prefix_except_default',
     defaultLocale: 'ua',
     baseUrl: siteUrl,
     bundle: {
@@ -133,7 +133,11 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/api/**': { prerender: false },
-    '/ua/**': { prerender: true },
+    '/': { prerender: true },
+    '/privacy': { prerender: true },
+    '/cookies': { prerender: true },
+    '/terms': { prerender: true },
+    '/accessibility': { prerender: true },
     '/ru/**': { prerender: true },
     '/**': {
       headers: {

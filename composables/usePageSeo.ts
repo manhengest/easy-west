@@ -1,6 +1,6 @@
 /**
  * Shared SEO for static legal / accessibility pages.
- * x-default canonical target is /ua/ (primary market).
+ * x-default canonical target is / (primary market, UA default locale).
  */
 export function usePageSeo(titleKey: string) {
   const { t } = useI18n()

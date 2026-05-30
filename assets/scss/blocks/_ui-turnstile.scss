@@ -1,0 +1,11 @@
+.ui-turnstile {
+  @apply flex flex-col gap-1;
+
+  &__widget {
+    @apply min-h-[65px];
+  }
+
+  &__error {
+    @apply text-sm text-destructive;
+  }
+}

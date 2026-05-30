@@ -1,6 +1,6 @@
 ---
 name: EASY WEST Architecture
-overview: "Nuxt 3 + Tailwind v4 + SCSS (BEM) landing for EASY WEST relocation: UA/RU i18n, GTM/Consent Mode v2, Nitro lead API (E.164, zod, in-memory idempotency, Turnstile + Resend + Telegram planned). VPS-first (node-server + nginx). Prerendered locales, @nuxtjs/sitemap, security headers, brand asset script."
+overview: "Nuxt 3 + Tailwind v4 + SCSS (BEM) landing for EASY WEST relocation: UA/RU i18n, GTM/Consent Mode v2, Nitro lead API (E.164, zod, in-memory idempotency, Turnstile verify + Resend + Telegram notify). VPS-first (node-server + nginx). Prerendered locales, @nuxtjs/sitemap, security headers, brand asset script."
 todos:
   - id: tailwind-spike
     content: Phase 0 — Tailwind v4 + SCSS split entry (`tailwind.css` + `main.scss` via @tailwindcss/postcss)
@@ -40,10 +40,10 @@ todos:
     status: completed
   - id: lead-validation
     content: libphonenumber-js E.164; vee-validate + zod; idempotencyKey; consentPolicyVersion; honeypot; attribution
-    status: in_progress
+    status: completed
   - id: leads-api
     content: POST /api/leads — Turnstile verify; Resend + Telegram notify; in-memory idempotency (single-process)
-    status: pending
+    status: completed
   - id: email-domain-auth
     content: Resend verified domain; SPF/DKIM/DMARC before go-live
     status: pending
@@ -86,8 +86,8 @@ isProject: true
 | Fonts | `@nuxt/fonts` + `@fontsource/inter` | Self-hosted; `scripts/sync-fonts.mjs` |
 | Forms | `vee-validate` + `zod` + `libphonenumber-js` | |
 | Analytics | `@nuxt/scripts` + GTM | `trigger: 'manual'` until consent |
-| Bot defense | Cloudflare Turnstile | Planned server verify; widget + env keys |
-| Lead notify | Resend + Telegram Bot API | Env keys required; not fully wired in API yet |
+| Bot defense | Cloudflare Turnstile | `UiTurnstile` widget + server verify (`server/utils/turnstile.ts`); prod rejects `stub-*` tokens |
+| Lead notify | Resend + Telegram Bot API | Wired in `server/utils/lead-notify.ts`; fetch to Resend + Telegram Bot API; masked phone in TG |
 | Gallery / reviews | `photoswipe`, `embla-carousel-vue` | ClientOnly / dynamic import |
 
 **Explicitly not in scope (v1):**
@@ -138,13 +138,15 @@ easy-west/
 ├── assets/css/tailwind.css      # @import tailwindcss + @theme
 ├── assets/scss/main.scss        # BEM blocks
 ├── components/                  # layout/, ui/, sections/
-├── composables/                 # useLeadForm, useConsent, useGtm, useMotionPresets, …
+├── composables/                 # useLeadForm, useTurnstile, useConsent, useGtm, …
 ├── i18n/locales/ua.json, ru.json
 ├── pages/                       # index, privacy, cookies, terms, accessibility
 ├── server/
 │   ├── plugins/00-env.ts
 │   ├── api/leads.post.ts
-│   └── utils/env-schema.ts, env.ts
+│   └── utils/env-schema.ts, env.ts, turnstile.ts, lead-notify.ts
+├── shared/mask-phone.ts, lead-schema.ts, lead-constants.ts
+├── components/ui/UiTurnstile.vue
 ├── plugins/gtm.client.ts
 └── public/brand/, fonts/, maps/, images/
 ```
@@ -191,10 +193,10 @@ sequenceDiagram
   User->>Form: submit + GDPR checkbox + Turnstile token
   Form->>API: JSON + idempotencyKey + attribution
   API->>API: zod + E.164 phone
-  API->>TS: verify (prod)
-  API->>Mail: send lead email
-  API->>TG: masked ops message
-  API->>Form: 200
+  API->>TS: verify (prod; staging allows stub-*)
+  API->>Mail: send lead email (Resend)
+  API->>TG: masked ops message (Telegram)
+  API->>Form: 200 (502 if both notify channels fail)
 ```
 
 ### Schema highlights (`shared/lead-schema.ts`)
@@ -205,15 +207,16 @@ sequenceDiagram
 | `phone` | National input per locale → E.164 |
 | `consentAccepted` | must be `true` |
 | `consentPolicyVersion` | e.g. `2026-05-27` (in payload, not external DB) |
-| `turnstileToken` | required; prod rejects `stub-*` tokens |
+| `turnstileToken` | required; prod rejects `stub-*`; staging skips verify for `stub-*` |
 | `website` | honeypot, empty |
 
-### Phase 4 implementation checklist
+### Phase 4 — lead notify (done)
 
-1. Turnstile server verify (hostname, action, token age)
-2. Resend: email to `NUXT_LEADS_TO_EMAIL` with full lead fields
-3. Telegram: allowlisted fields only (masked phone, route, source, `leadId`)
-4. Keep or upgrade idempotency if running multiple Node workers
+1. ~~Turnstile server verify~~ — `server/utils/turnstile.ts` (hostname, action `lead_submit`, token age)
+2. ~~Resend email~~ — `server/utils/lead-notify.ts` → `NUXT_LEADS_TO_EMAIL` with full lead fields
+3. ~~Telegram ops message~~ — masked phone via `shared/mask-phone.ts`, route, source, `leadId`
+4. ~~Turnstile widget~~ — `UiTurnstile` + `useTurnstile` on `LeadForm`
+5. In-memory idempotency retained; upgrade if running multiple Node workers
 
 ### GDPR (pragmatic v1)
 
@@ -273,9 +276,8 @@ See [.env.example](.env.example).
 
 | Phase | Status | Focus |
 |-------|--------|--------|
-| 0–3 | Done | Bootstrap, UI, sections, GTM, fonts, a11y page |
-| 4 | **Next** | Turnstile + Resend + Telegram in `leads.post.ts` |
-| 5 | Pending | Sitemap CI, Playwright, Lighthouse budgets |
+| 0–4 | Done | Bootstrap, UI, sections, GTM, fonts, a11y, lead form + notify pipeline |
+| 5 | **Next** | Sitemap CI, Playwright, Lighthouse budgets |
 | 6 | Pending | VPS production deploy, Resend domain auth |
 
 **Removed / deferred todos:** `kv-retention`, `error-monitoring` (Sentry), Upstash rate limits, QStash notify queue, DSAR script tied to external consent DB.
@@ -287,7 +289,8 @@ See [.env.example](.env.example).
 - Build: `pnpm build` → `.output/server/index.mjs`
 - Run behind nginx ([deploy/nginx.conf.example](deploy/nginx.conf.example))
 - `NUXT_DEPLOY_ENV=production` + real Turnstile keys for prod
-- Logs: journald / PM2 — no Sentry required for v1
+- Required for lead notify: `NUXT_RESEND_API_KEY`, `NUXT_LEADS_FROM_EMAIL`, `NUXT_LEADS_TO_EMAIL`, `NUXT_TELEGRAM_BOT_TOKEN`, `NUXT_TELEGRAM_CHAT_ID` (real chat ID, not placeholder)
+- Logs: journald / PM2 — watch for `[leads] Resend failed`, `[leads] Telegram failed`, `[leads] Partial notification failure`
 
 ---
 
@@ -306,14 +309,14 @@ See [.env.example](.env.example).
 
 ## 13. Open items
 
-- Wire Turnstile widget on `LeadForm` (replace stub token)
-- Resend domain SPF/DKIM/DMARC
-- Telegram bot + staging vs prod chat IDs
+- Resend domain SPF/DKIM/DMARC (see `email-domain-auth` todo)
+- Telegram bot + staging vs prod chat IDs on VPS
 - GTM container ID
 - Privacy policy copy (processors, retention)
-- Turnstile staging + prod site keys
+- Turnstile staging + prod site keys verified on `easy-west.com`
 - Legal copy for `accessibility.vue`
 - CSP enforce after Report-Only review
+- E2E: form happy path, idempotency double-submit, Turnstile 403, notify failure 502
 
 ---
 

@@ -11,7 +11,16 @@ interface LeadApiResponse {
   receivedAt: string
 }
 
-export function useLeadForm(source: LeadSource) {
+interface TurnstileBridge {
+  enabled: boolean
+  token: string
+  reset: () => void
+}
+
+export function useLeadForm(
+  source: LeadSource,
+  turnstileRef?: Ref<TurnstileBridge | null>,
+) {
   const { locale, t } = useI18n()
   const { hiddenFields } = useLeadAttribution()
   const { pushEvent } = useGtm()
@@ -51,10 +60,28 @@ export function useLeadForm(source: LeadSource) {
       }))
   })
 
+  function resolveTurnstileToken(): string | null {
+    const turnstile = turnstileRef?.value
+    if (turnstile?.enabled) {
+      return turnstile.token || null
+    }
+    if (config.public.turnstileSiteKey) {
+      return null
+    }
+    return 'stub-turnstile-phase2'
+  }
+
   const onSubmit = handleSubmit(async (values) => {
     if (isSubmitting.value) {
       return
     }
+
+    const turnstileToken = resolveTurnstileToken()
+    if (!turnstileToken) {
+      submitError.value = 'captcha'
+      return
+    }
+
     isSubmitting.value = true
     submitError.value = null
     pushEvent('lead_submit_attempt', { source, locale: locale.value })
@@ -69,9 +96,7 @@ export function useLeadForm(source: LeadSource) {
       source,
       consentAccepted: true as const,
       consentPolicyVersion: CONSENT_POLICY_VERSION,
-      turnstileToken: config.public.turnstileSiteKey
-        ? 'stub-turnstile-phase2'
-        : 'stub-turnstile-phase2',
+      turnstileToken,
       ...hiddenFields.value,
       website: '',
     }
@@ -86,11 +111,20 @@ export function useLeadForm(source: LeadSource) {
     }
     catch (err: unknown) {
       pushEvent('lead_submit_error', { source, locale: locale.value })
-      if (err && typeof err === 'object' && 'statusCode' in err && (err as { statusCode: number }).statusCode === 400) {
-        pushEvent('lead_validation_error', { source })
-        setFieldError('phone', 'phone')
+      if (err && typeof err === 'object' && 'statusCode' in err) {
+        const statusCode = (err as { statusCode: number }).statusCode
+        if (statusCode === 400) {
+          pushEvent('lead_validation_error', { source })
+          setFieldError('phone', 'phone')
+        }
+        if (statusCode === 403) {
+          turnstileRef?.value?.reset()
+          submitError.value = 'captcha'
+          return
+        }
       }
       submitError.value = 'submit'
+      turnstileRef?.value?.reset()
     }
     finally {
       isSubmitting.value = false
@@ -102,6 +136,7 @@ export function useLeadForm(source: LeadSource) {
     submitSuccess.value = false
     submitError.value = null
     resetForm()
+    turnstileRef?.value?.reset()
   }
 
   return {

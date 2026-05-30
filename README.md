@@ -6,7 +6,7 @@ Nuxt 3 landing for EASY WEST relocation services (UA/RU i18n).
 
 - Nuxt 3 + Nitro **`node-server`** (VPS-first — nginx reverse proxy)
 - Tailwind CSS v4 + SCSS BEM blocks (split CSS entry)
-- `@nuxtjs/i18n` v9 (`/ua/`, `/ru/`)
+- `@nuxtjs/i18n` v9 (UA at `/`, RU at `/ru/`)
 - Self-hosted **Inter** via `@nuxt/fonts` local provider + `@fontsource/inter`
 
 ## Setup

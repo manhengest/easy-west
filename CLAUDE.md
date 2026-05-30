@@ -1,6 +1,6 @@
 # EASY WEST — Agent Guide
 
-Nuxt 3 marketing landing for **EASY WEST** relocation services. Ukrainian and Russian locales (`/ua/`, `/ru/`), mobile-first UX, lead capture API, GTM/Consent Mode v2, VPS-first deploy (Nitro `node-server` + nginx).
+Nuxt 3 marketing landing for **EASY WEST** relocation services. Ukrainian (default, unprefixed `/`) and Russian (`/ru/`) locales, mobile-first UX, lead capture API, GTM/Consent Mode v2, VPS-first deploy (Nitro `node-server` + nginx).
 
 ## Before you run anything
 
@@ -35,7 +35,7 @@ NODE_ENV=production pnpm start
 |------|--------|
 | Framework | Nuxt 3 + Vue 3 + TypeScript |
 | Styling | Tailwind CSS v4 + SCSS (BEM blocks, split CSS entry) |
-| i18n | `@nuxtjs/i18n` v9 — prefix routes `/ua/`, `/ru/` |
+| i18n | `@nuxtjs/i18n` v9 — UA unprefixed (`/`), RU prefixed (`/ru/`) |
 | Deploy | Nitro `node-server` (VPS + nginx) |
 | Forms | VeeValidate + Zod; `libphonenumber-js` for phone |
 | Fonts | Self-hosted Inter (`@nuxt/fonts`, `@fontsource/inter`) |
