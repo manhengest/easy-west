@@ -1,4 +1,3 @@
-import { maskPhoneE164 } from '~/shared/mask-phone'
 import type { LeadSubmitPayload } from '~/shared/lead-schema'
 
 export interface LeadNotificationContext {
@@ -22,6 +21,11 @@ function escapeHtml(value: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
+}
+
+function telegramTelLink(e164: string): string {
+  const safe = escapeHtml(e164)
+  return `<a href="tel:${safe}">${safe}</a>`
 }
 
 function optionalRow(label: string, value: string | undefined): string {
@@ -51,18 +55,19 @@ function buildLeadEmailHtml(ctx: LeadNotificationContext): string {
     optionalRow('Landing path', payload.landingPath),
   ].join('')
 
-  return `<!DOCTYPE html><html><body><h2>EASY WEST — new lead</h2><table>${rows}</table></body></html>`
+  return `<!DOCTYPE html><html><body><h2>EASY WEST — нова заявка</h2><table>${rows}</table></body></html>`
 }
 
 function buildTelegramMessage(ctx: LeadNotificationContext): string {
   const { leadId, phoneE164, payload } = ctx
-  const maskedPhone = maskPhoneE164(phoneE164)
   const lines = [
-    '🚚 <b>EASY WEST</b> — new lead',
+    '🚚 <b>EASY WEST</b> — нова заявка',
+    `--------------------------------`,
+    `<b>Маршрут:</b> ${escapeHtml(payload.from)} → ${escapeHtml(payload.to)}`,
+    `<b>Телефон:</b> ${telegramTelLink(phoneE164)}`,
+    `--------------------------------`,
+    `<b>Мова:</b> ${escapeHtml(payload.locale)} · <b>Форма:</b> ${escapeHtml(payload.source)}`,
     `<b>ID:</b> ${escapeHtml(leadId)}`,
-    `<b>Route:</b> ${escapeHtml(payload.from)} → ${escapeHtml(payload.to)}`,
-    `<b>Phone:</b> ${escapeHtml(maskedPhone)}`,
-    `<b>Locale:</b> ${escapeHtml(payload.locale)} · <b>Source:</b> ${escapeHtml(payload.source)}`,
   ]
   return lines.join('\n')
 }
