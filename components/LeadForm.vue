@@ -36,6 +36,7 @@
       input-id="lead-from"
       :label="t('lead.fields.from')"
       :error="errors.from ? t('lead.errors.from') : undefined"
+      required
       autocomplete="address-level2"
     />
 
@@ -47,7 +48,18 @@
       input-id="lead-to"
       :label="t('lead.fields.to')"
       :error="errors.to ? t('lead.errors.to') : undefined"
+      required
       autocomplete="address-level1"
+    />
+
+    <UiTextarea
+      :model-value="details ?? ''"
+      v-bind="detailsAttrs"
+      @update:model-value="details = $event"
+      name="details"
+      input-id="lead-details"
+      :label="t('lead.fields.details')"
+      :placeholder="t('lead.fields.detailsPlaceholder')"
     />
 
     <UiInput
@@ -58,7 +70,10 @@
       input-id="lead-phone"
       type="tel"
       :label="t('lead.fields.phone')"
+      :placeholder="t('lead.fields.phonePlaceholder')"
+      :hint="t('lead.fields.phoneHint')"
       :error="errors.phone ? t('lead.errors.phone') : undefined"
+      required
       autocomplete="tel"
     />
 
@@ -97,21 +112,16 @@
 
     <UiTurnstile ref="turnstileRef" />
 
-    <div v-if="source === 'hero'" class="lead-form__footer">
-      <UiButton
-        type="submit"
-        variant="primary"
-        class="lead-form__submit"
-        :loading="isSubmitting"
-        :disabled="isSubmitting"
-      >
-        {{ t('hero.formSubmit') }}
-        <UiIcon name="lucide:arrow-right" size="sm" />
-      </UiButton>
-      <p class="lead-form__footer-note">
-        {{ t('hero.formFooter') }}
-      </p>
-    </div>
+    <UiButton
+      v-if="source === 'hero'"
+      type="submit"
+      variant="primary"
+      class="lead-form__submit"
+      :loading="isSubmitting"
+      :disabled="isSubmitting"
+    >
+      {{ t('hero.formSubmit') }}
+    </UiButton>
     <UiButton
       v-else
       type="submit"
@@ -146,6 +156,8 @@ const {
   fromAttrs,
   to,
   toAttrs,
+  details,
+  detailsAttrs,
   phone,
   phoneAttrs,
   consentAccepted,

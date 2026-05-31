@@ -1,16 +1,16 @@
 .reviews-section {
-  @apply py-14;
+  @apply bg-surface py-14;
 
   &__header {
     @apply mx-auto w-full max-w-3xl px-4 text-center sm:px-6;
   }
 
   &__title {
-    @apply text-2xl font-semibold md:text-3xl;
+    @apply block text-2xl font-semibold md:text-3xl;
   }
 
   &__lead {
-    @apply mt-3 text-muted-foreground;
+    @apply mt-3 font-normal text-muted-foreground;
   }
 }
 
@@ -23,6 +23,7 @@
 
   &__viewport {
     @apply overflow-hidden;
+    container-type: inline-size;
     touch-action: pan-y pinch-zoom;
   }
 
@@ -32,15 +33,21 @@
   }
 
   &__slide {
-    @apply min-w-[min(260px,78vw)] shrink-0 rounded-[var(--radius)] border border-border bg-card p-3 sm:min-w-[280px] md:min-w-[calc(33.333%-0.75rem)];
+    @apply shrink-0 cursor-pointer rounded-[var(--radius)] border border-border bg-card p-3 text-left;
+    flex: 0 0 min(260px, 85cqw);
+    min-width: 0;
+
+    @container (min-width: 640px) {
+      flex-basis: calc((100cqw - 1rem) / 2);
+    }
+
+    @container (min-width: 1024px) {
+      flex-basis: calc((100cqw - 3rem) / 4);
+    }
   }
 
   &__img {
     @apply mx-auto h-auto max-h-[420px] w-full object-contain;
-  }
-
-  &__channel {
-    @apply mt-2 block text-center text-xs text-muted-foreground;
   }
 
   &__controls {

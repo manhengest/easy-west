@@ -46,13 +46,7 @@ todos:
     status: completed
   - id: email-domain-auth
     content: Resend verified domain; SPF/DKIM/DMARC before go-live
-    status: pending
-  - id: sitemap-i18n
-    content: CI asserts /ua/+/ru/ URLs and hreflang; x-default → /ua/
-    status: in_progress
-  - id: qa-ci
-    content: lint, typecheck, build, Playwright form + sitemap; lighthouse warn-then-block
-    status: pending
+    status: completed
   - id: deploy-vps
     content: Production .env on VPS; nginx; pm2 optional; preview QA
     status: pending
@@ -65,8 +59,7 @@ isProject: true
 
 ## Sources
 
-- Product spec: [doc/ПОВНЕ ТЕХНІЧНЕ ЗАВДАННЯ ДЛЯ ДИЗАЙНУ LANDING PAGE EASY WEST.md](doc/ПОВНЕ ТЕХНІЧНЕ ЗАВДАННЯ ДЛЯ ДИЗАЙНУ LANDING PAGE EASY WEST.md)
-- Brand: `doc/logos/` → `pnpm assets:brand` → `public/brand/`, favicon, OG
+- Brand: `assets/images/logo/` → `pnpm assets:brand` → favicon, apple-touch-icon, `public/og/og-default.jpg`
 - **Deploy:** VPS-first — Nitro `node-server` + nginx ([runbooks/deploy-vps.md](runbooks/deploy-vps.md))
 - **Package manager:** pnpm, Node ≥24
 
@@ -148,7 +141,7 @@ easy-west/
 ├── shared/mask-phone.ts, lead-schema.ts, lead-constants.ts
 ├── components/ui/UiTurnstile.vue
 ├── plugins/gtm.client.ts
-└── public/brand/, fonts/, maps/, images/
+└── public/og/, fonts/, images/ (generated favicon at repo root)
 ```
 
 **BEM:** `block__element`, modifier `block_modifier` (single underscore). Templates use BEM classes only (+ `v-motion` where needed).
@@ -173,7 +166,6 @@ easy-west/
 - `useLocaleHead({ seo: true })` + `useSeoMeta` per page
 - `x-default` → `/ua/` (primary market)
 - Sitemap: module auto-integrates with i18n when both installed
-- CI: `pnpm verify:sitemap` / `verify:prerender`
 
 ---
 
@@ -277,8 +269,7 @@ See [.env.example](.env.example).
 | Phase | Status | Focus |
 |-------|--------|--------|
 | 0–4 | Done | Bootstrap, UI, sections, GTM, fonts, a11y, lead form + notify pipeline |
-| 5 | **Next** | Sitemap CI, Playwright, Lighthouse budgets |
-| 6 | Pending | VPS production deploy, Resend domain auth |
+| 5 | **Next** | VPS production deploy, Resend domain auth |
 
 **Removed / deferred todos:** `kv-retention`, `error-monitoring` (Sentry), Upstash rate limits, QStash notify queue, DSAR script tied to external consent DB.
 
@@ -294,33 +285,19 @@ See [.env.example](.env.example).
 
 ---
 
-## 12. Testing & CI (target)
+## 12. Open items
 
-| Check | Tool |
-|-------|------|
-| Lint | eslint + stylelint |
-| Types | `vue-tsc` |
-| Env | `validate-env.ts` in prebuild |
-| Build | `nuxt build` |
-| E2E | Playwright — form happy path, idempotency double-submit, Turnstile 403, sitemap hreflang |
-| A11y | axe on landing + overlays |
-
----
-
-## 13. Open items
-
-- Resend domain SPF/DKIM/DMARC (see `email-domain-auth` todo)
+- ~~Resend domain SPF/DKIM/DMARC (see `email-domain-auth` todo)~~ — done
 - Telegram bot + staging vs prod chat IDs on VPS
 - GTM container ID
 - Privacy policy copy (processors, retention)
 - Turnstile staging + prod site keys verified on `easy-west.com`
 - Legal copy for `accessibility.vue`
 - CSP enforce after Report-Only review
-- E2E: form happy path, idempotency double-submit, Turnstile 403, notify failure 502
 
 ---
 
-## 14. Future enhancements (only if needed)
+## 13. Future enhancements (only if needed)
 
 - **Rate limiting:** nginx `limit_req` or small Redis — if abuse appears
 - **Durable idempotency / lead log:** SQLite on VPS or managed DB — if multi-instance or audit required

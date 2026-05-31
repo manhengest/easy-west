@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="360" height="640" viewBox="0 0 360 640">
-  <rect width="360" height="640" fill="#e8f5e9"/>
-  <rect x="24" y="80" width="260" height="48" rx="8" fill="#fff"/>
-  <rect x="76" y="160" width="220" height="72" rx="12" fill="#dcf8c6"/>
-  <text x="180" y="520" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#5e646c">WhatsApp review</text>
-</svg>

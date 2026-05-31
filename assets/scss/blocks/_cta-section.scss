@@ -13,11 +13,11 @@
   );
 
   &__title {
-    @apply max-w-3xl text-2xl font-bold leading-tight text-white md:text-[2rem] md:leading-tight lg:text-4xl;
+    @apply block max-w-3xl text-2xl font-bold leading-tight text-white md:text-[2rem] md:leading-tight lg:text-4xl;
   }
 
   &__lead {
-    @apply mt-4 max-w-2xl text-base text-white/85 md:mt-5 md:text-lg;
+    @apply mt-4 max-w-2xl text-base font-normal text-white/85 md:mt-5 md:text-lg;
   }
 
   &__actions {

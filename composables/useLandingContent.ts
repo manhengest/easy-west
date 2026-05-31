@@ -14,7 +14,6 @@ import {
   SEGMENT_ICONS,
   SEGMENT_IDS,
   TIMELINE_STEP_COUNT,
-  TIMELINE_STEP_ICONS,
 } from '~/content/landing-media'
 import type {
   FaqItem,
@@ -44,7 +43,6 @@ export function useLandingContent() {
       id: t(`timeline.steps.${index}.id`),
       title: t(`timeline.steps.${index}.title`),
       description: t(`timeline.steps.${index}.description`),
-      icon: TIMELINE_STEP_ICONS[index],
       number: index + 1,
     })),
   )

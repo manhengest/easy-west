@@ -9,9 +9,11 @@
       :name="name"
       :type="type"
       :value="modelValue"
+      :placeholder="placeholder"
       :autocomplete="autocomplete"
+      :required="required"
       :aria-invalid="error ? 'true' : undefined"
-      :aria-describedby="error ? `${inputId}-error` : undefined"
+      :aria-describedby="describedBy"
       v-bind="$attrs"
       @input="onInput"
     >
@@ -22,6 +24,13 @@
       role="alert"
     >
       {{ error }}
+    </p>
+    <p
+      v-else-if="hint"
+      :id="`${inputId}-hint`"
+      class="ui-input__hint"
+    >
+      {{ hint }}
     </p>
   </div>
 </template>
@@ -36,8 +45,11 @@ const props = withDefaults(
     name: string
     type?: string
     error?: string
+    hint?: string
+    placeholder?: string
     autocomplete?: string
     inputId?: string
+    required?: boolean
   }>(),
   { type: 'text' },
 )
@@ -45,6 +57,16 @@ const props = withDefaults(
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 
 const inputId = computed(() => props.inputId ?? `field-${props.name}`)
+
+const describedBy = computed(() => {
+  if (props.error) {
+    return `${inputId.value}-error`
+  }
+  if (props.hint) {
+    return `${inputId.value}-hint`
+  }
+  return undefined
+})
 
 function onInput(event: Event) {
   emit('update:modelValue', (event.target as HTMLInputElement).value)

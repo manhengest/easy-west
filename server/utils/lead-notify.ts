@@ -42,6 +42,7 @@ function buildLeadEmailHtml(ctx: LeadNotificationContext): string {
     optionalRow('Received', receivedAt),
     optionalRow('From', payload.from),
     optionalRow('To', payload.to),
+    optionalRow('Details', payload.details),
     optionalRow('Phone', phoneE164),
     optionalRow('Locale', payload.locale),
     optionalRow('Source', payload.source),
@@ -64,6 +65,9 @@ function buildTelegramMessage(ctx: LeadNotificationContext): string {
     '🚚 <b>EASY WEST</b> — нова заявка',
     `--------------------------------`,
     `<b>Маршрут:</b> ${escapeHtml(payload.from)} → ${escapeHtml(payload.to)}`,
+    ...(payload.details
+      ? [`<b>Деталі:</b> ${escapeHtml(payload.details)}`]
+      : []),
     `<b>Телефон:</b> ${telegramTelLink(phoneE164)}`,
     `--------------------------------`,
     `<b>Мова:</b> ${escapeHtml(payload.locale)} · <b>Форма:</b> ${escapeHtml(payload.source)}`,

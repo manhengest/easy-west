@@ -8,25 +8,13 @@
     <ReviewsSection />
     <FaqSection />
     <CtaSection @open-lead="openLead('cta')" />
-
-    <LeadFormHost v-model="leadOpen" :source="leadSource" />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { LeadSource } from '~/shared/lead-constants'
-
 const { t } = useI18n()
 const config = useRuntimeConfig()
-const leadOpen = ref(false)
-const leadSource = ref<LeadSource>('cta')
-
-function openLead(source: LeadSource) {
-  leadSource.value = source
-  leadOpen.value = true
-}
-
-provideLeadHost(openLead)
+const { openLead } = useLeadHost()
 
 useLocaleHead({ seo: true })
 

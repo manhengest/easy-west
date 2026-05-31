@@ -1,14 +1,14 @@
 <template>
   <section id="gallery" class="gallery-section" v-motion="scrollVisible()">
     <header class="gallery-section__header">
-      <h2 class="gallery-section__title">
+      <span class="gallery-section__title">
         {{ t('gallery.title') }}
-      </h2>
-      <p class="gallery-section__lead">
+      </span>
+      <h2 class="gallery-section__lead">
         {{ t('gallery.lead') }}
-      </p>
+      </h2>
     </header>
-    <GalleryGrid :images="galleryImages" />
+    <GalleryCarousel :images="galleryImages" />
   </section>
 </template>
 

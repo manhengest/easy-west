@@ -1,26 +1,31 @@
 <template>
   <Teleport to="body">
-    <div
-      v-if="modelValue"
-      class="ui-overlay"
-      @keydown.esc.prevent="close"
+    <Transition
+      name="ui-overlay"
+      @after-leave="leaving = false"
     >
       <div
-        class="ui-overlay__backdrop"
-        aria-hidden="true"
-        @click="close"
-      />
-      <div
-        ref="panelRef"
-        class="ui-overlay__panel"
-        :class="panelClass"
-        role="dialog"
-        aria-modal="true"
-        :aria-labelledby="titleId"
+        v-if="open"
+        class="ui-overlay"
+        @keydown.esc.prevent="close"
       >
-        <slot />
+        <div
+          class="ui-overlay__backdrop"
+          aria-hidden="true"
+          @click="close"
+        />
+        <div
+          ref="panelRef"
+          class="ui-overlay__panel"
+          :class="panelClass"
+          role="dialog"
+          aria-modal="true"
+          :aria-labelledby="titleId"
+        >
+          <slot />
+        </div>
       </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>
 
@@ -35,13 +40,30 @@ const props = defineProps<{
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
 
 const panelRef = ref<HTMLElement | null>(null)
-const active = computed(() => props.modelValue)
+const open = ref(false)
+const leaving = ref(false)
+const overlayActive = computed(() => open.value || leaving.value)
+
+watch(
+  () => props.modelValue,
+  (value) => {
+    if (value) {
+      leaving.value = false
+      open.value = true
+    }
+    else if (open.value) {
+      leaving.value = true
+      open.value = false
+    }
+  },
+  { immediate: true },
+)
 
 function close() {
   emit('update:modelValue', false)
 }
 
-useFocusTrap(panelRef as Ref<HTMLElement | null>, active)
-useOverlayInert(active)
-useOverlayHistory(active, toRef(() => props.overlayId), close)
+useFocusTrap(panelRef as Ref<HTMLElement | null>, overlayActive)
+useOverlayInert(overlayActive)
+useOverlayHistory(toRef(() => props.modelValue), toRef(() => props.overlayId), close)
 </script>

@@ -19,9 +19,7 @@
     "assets:brand": "node scripts/generate-brand-assets.mjs",
     "lint": "stylelint \"assets/scss/**/*.scss\"",
     "lint:eslint": "eslint .",
-    "typecheck": "vue-tsc --noEmit",
-    "verify:sitemap": "node scripts/verify-sitemap.mjs",
-    "verify:prerender": "node scripts/verify-sitemap.mjs --prerender"
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.6",

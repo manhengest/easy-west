@@ -1,18 +1,18 @@
 @use '../mixins' as *;
 
 .segments {
-  @apply py-14;
+  @apply bg-surface py-14;
 
   &__header {
     @apply mx-auto w-full max-w-6xl px-4 text-center sm:px-6;
   }
 
   &__title {
-    @apply text-2xl font-semibold md:text-3xl;
+    @apply block text-2xl font-semibold md:text-3xl;
   }
 
   &__lead {
-    @apply mt-3 text-muted-foreground;
+    @apply mt-3 font-normal text-muted-foreground;
   }
 
   &__unifying {
@@ -25,7 +25,7 @@
 }
 
 .segment-card {
-  @apply flex h-full w-full cursor-pointer flex-col items-start rounded-[var(--radius)] border border-border bg-card p-5 text-left transition-shadow duration-200;
+  @apply relative flex h-full w-full cursor-pointer flex-col items-start rounded-[var(--radius)] border border-border bg-card p-5 text-left transition-shadow duration-200;
 
   @include reduced-motion {
     transition: none;
@@ -33,6 +33,18 @@
 
   &:hover {
     @apply shadow-md;
+
+    .segment-card__hint {
+      @apply border-primary/30 bg-primary/10 text-primary;
+    }
+  }
+
+  &__hint {
+    @apply absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-muted text-xs font-semibold leading-none text-muted-foreground transition-colors duration-200;
+
+    @include reduced-motion {
+      transition: none;
+    }
   }
 
   &__icon {

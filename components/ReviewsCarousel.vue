@@ -4,12 +4,13 @@
     <template #fallback>
       <ul class="reviews-carousel reviews-carousel_fallback">
         <li v-for="slide in slides" :key="slide.id" class="reviews-carousel__slide">
-          <NuxtImg
+          <img
             :src="slide.src"
             :alt="slide.alt"
             :width="slide.width"
             :height="slide.height"
             loading="lazy"
+            decoding="async"
             class="reviews-carousel__img"
           />
         </li>

@@ -1,11 +1,17 @@
 import type { LeadSource } from '~/shared/lead-constants'
 
-const LEAD_HOST_KEY = Symbol('leadHost') as InjectionKey<(source: LeadSource) => void>
+const leadOpen = ref(false)
+const leadSource = ref<LeadSource>('cta')
 
-export function provideLeadHost(open: (source: LeadSource) => void) {
-  provide(LEAD_HOST_KEY, open)
+function openLead(source: LeadSource) {
+  leadSource.value = source
+  leadOpen.value = true
 }
 
 export function useLeadHost() {
-  return inject(LEAD_HOST_KEY, null)
+  return {
+    leadOpen,
+    leadSource,
+    openLead,
+  }
 }

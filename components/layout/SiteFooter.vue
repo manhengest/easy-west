@@ -4,12 +4,12 @@
       <div class="site-footer__grid">
         <div class="site-footer__brand">
           <NuxtLink :to="localePath('/')" class="site-footer__logo-link">
-            <NuxtImg
-              src="/brand/logo-horizontal.png"
+            <img
+              :src="LOGO_HORIZONTAL_SRC"
               alt="EASY WEST"
-              width="160"
-              height="36"
               class="site-footer__logo"
+              loading="lazy"
+              decoding="async"
             />
           </NuxtLink>
           <p class="site-footer__description">
@@ -71,6 +71,8 @@
 </template>
 
 <script setup lang="ts">
+import { LOGO_HORIZONTAL_SRC } from '~/content/brand-assets'
+
 const { t } = useI18n()
 const localePath = useLocalePath()
 const { links } = useContacts()

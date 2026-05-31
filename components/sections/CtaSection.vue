@@ -2,12 +2,12 @@
   <div class="cta-section-wrap">
     <section id="contacts" class="cta-section" v-motion="scrollVisible()">
       <div class="cta-section__content">
-        <h2 class="cta-section__title">
+        <span class="cta-section__title">
           {{ t('cta.title') }}
-        </h2>
-        <p class="cta-section__lead">
+        </span>
+        <h2 class="cta-section__lead">
           {{ t('cta.lead') }}
-        </p>
+        </h2>
       </div>
       <div class="cta-section__actions">
         <UiButton

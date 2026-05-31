@@ -1,12 +1,12 @@
 <template>
   <section id="segments" class="segments" v-motion="scrollVisible()">
     <header class="segments__header">
-      <h2 class="segments__title">
+      <span class="segments__title">
         {{ t('segments.title') }}
-      </h2>
-      <p class="segments__lead">
+      </span>
+      <h2 class="segments__lead">
         {{ t('segments.lead') }}
-      </p>
+      </h2>
       <p class="segments__unifying">
         {{ t('segments.unifying') }}
       </p>
@@ -23,6 +23,7 @@
           class="segment-card"
           @click="openSegment(segment)"
         >
+          <span class="segment-card__hint" aria-hidden="true">?</span>
           <UiIcon :name="segment.icon" size="lg" class="segment-card__icon" />
           <h3 class="segment-card__title">
             {{ segment.title }}

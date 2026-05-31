@@ -5,13 +5,14 @@
   >
     <div class="site-header__inner">
       <NuxtLink :to="localePath('/')" class="site-header__brand">
-        <NuxtImg
-          src="/brand/logo-horizontal.png"
+        <img
+          :src="LOGO_HORIZONTAL_SRC"
           alt="EASY WEST"
           width="180"
           height="40"
           class="site-header__logo"
-          preload
+          fetchpriority="high"
+          decoding="async"
         />
       </NuxtLink>
 
@@ -74,12 +75,13 @@
                 class="site-header-menu__brand"
                 @click="closeMenu"
               >
-                <NuxtImg
-                  src="/brand/logo-horizontal.png"
+                <img
+                  :src="LOGO_HORIZONTAL_SRC"
                   alt="EASY WEST"
                   width="180"
                   height="40"
                   class="site-header__logo"
+                  decoding="async"
                 />
               </NuxtLink>
               <button
@@ -117,11 +119,12 @@
 </template>
 
 <script setup lang="ts">
+import { LOGO_HORIZONTAL_SRC } from '~/content/brand-assets'
 import { useWindowScroll } from '@vueuse/core'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
-const openLead = useLeadHost()
+const { openLead } = useLeadHost()
 
 const anchorLinks = [
   { hash: '#segments', labelKey: 'nav.services' },
@@ -154,11 +157,7 @@ function closeMenu() {
 }
 
 function onConsultationClick() {
-  if (openLead) {
-    openLead('header')
-    return
-  }
-  navigateTo({ path: localePath('/'), hash: '#hero' })
+  openLead('header')
 }
 
 function onMobileConsultationClick() {

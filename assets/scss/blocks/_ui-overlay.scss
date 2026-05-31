@@ -1,5 +1,8 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
 .ui-overlay {
-  @apply fixed inset-0 z-50 flex items-end justify-center md:items-center;
+  @apply fixed inset-0 z-[60] flex items-end justify-center md:items-center;
 
   &__backdrop {
     @apply absolute inset-0 bg-foreground/40;
@@ -7,5 +10,64 @@
 
   &__panel {
     @apply relative z-10 max-h-[90dvh] w-full overflow-y-auto bg-background shadow-lg;
+  }
+}
+
+.ui-overlay-enter-active,
+.ui-overlay-leave-active {
+  transition: opacity $duration-base $ease-soft;
+
+  .ui-overlay__backdrop {
+    transition: opacity $duration-fast $ease-soft;
+  }
+
+  .ui-overlay__panel {
+    transition:
+      opacity $duration-base $ease-soft,
+      transform $duration-base $ease-soft;
+  }
+
+  @include reduced-motion {
+    transition: none;
+
+    .ui-overlay__backdrop,
+    .ui-overlay__panel {
+      transition: none;
+    }
+  }
+}
+
+.ui-overlay-enter-from,
+.ui-overlay-leave-to {
+  opacity: 0;
+
+  .ui-overlay__backdrop {
+    opacity: 0;
+  }
+
+  .ui-overlay__panel {
+    opacity: 0;
+  }
+
+  .ui-overlay__panel.ui-bottom-sheet {
+    transform: translateY(100%);
+  }
+
+  .ui-overlay__panel.ui-modal {
+    transform: translateY(0.5rem);
+  }
+}
+
+.ui-overlay-enter-to,
+.ui-overlay-leave-from {
+  opacity: 1;
+
+  .ui-overlay__backdrop {
+    opacity: 1;
+  }
+
+  .ui-overlay__panel {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

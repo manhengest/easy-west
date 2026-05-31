@@ -1,33 +1,61 @@
 import type { GalleryImage, ReviewSlide } from '~/types/content'
+import heroBackground from '~/assets/images/mc.png'
+import geographyMap from '~/assets/images/map.jpg'
+import gallery7 from '~/assets/images/gallery/gallery-7.jpg'
+import gallery11 from '~/assets/images/gallery/gallery-11.jpg'
+import gallery13 from '~/assets/images/gallery/gallery-13.jpg'
+import gallery15 from '~/assets/images/gallery/gallery-15.jpg'
+import gallery16 from '~/assets/images/gallery/gallery-16.jpg'
+import gallery17 from '~/assets/images/gallery/gallery-17.jpg'
+import gallery18 from '~/assets/images/gallery/gallery-18.jpg'
+import gallery19 from '~/assets/images/gallery/gallery-19.jpg'
+import gallery20 from '~/assets/images/gallery/gallery-20.jpg'
+import gallery21 from '~/assets/images/gallery/gallery-21.jpg'
+import gallery23 from '~/assets/images/gallery/gallery-23.jpg'
+import gallery25 from '~/assets/images/gallery/gallery-25.jpg'
+import gallery26 from '~/assets/images/gallery/gallery-26.jpg'
+import gallery27 from '~/assets/images/gallery/gallery-27.jpg'
+import gallery28 from '~/assets/images/gallery/gallery-28.jpg'
+import gallery37 from '~/assets/images/gallery/gallery-37.jpg'
+import rev1 from '~/assets/images/review/rev-1.jpg'
+import rev2 from '~/assets/images/review/rev-2.jpg'
+import rev3 from '~/assets/images/review/rev-3.jpg'
+import rev4 from '~/assets/images/review/rev-4.jpg'
+import rev5 from '~/assets/images/review/rev-5.jpg'
+import rev6 from '~/assets/images/review/rev-6.jpg'
+import rev7 from '~/assets/images/review/rev-7.jpg'
+import rev8 from '~/assets/images/review/rev-8.jpg'
+import rev9 from '~/assets/images/review/rev-9.jpg'
+import rev10 from '~/assets/images/review/rev-10.jpg'
 
 export const SEGMENT_IDS = [
-  'family',
+  'uk-europe',
   'europe',
+  'apartment',
   'furniture',
   'belongings',
-  'relocation',
-  'apartment',
+  'appliances',
 ] as const
 
 export const SEGMENT_ICONS: Record<(typeof SEGMENT_IDS)[number], string> = {
-  family: 'lucide:users',
+  'uk-europe': 'lucide:route',
   europe: 'lucide:map',
+  apartment: 'lucide:building-2',
   furniture: 'lucide:sofa',
   belongings: 'lucide:package',
-  relocation: 'lucide:plane',
-  apartment: 'lucide:home',
+  appliances: 'lucide:refrigerator',
 }
 
-export const TIMELINE_STEP_COUNT = 9
+export const TIMELINE_STEP_COUNT = 13
 
 export const PROCESS_PHASE_COUNT = 4
 
 /** Inclusive start, exclusive end indices into `timeline.steps`. */
 export const PROCESS_PHASE_RANGES: ReadonlyArray<readonly [number, number]> = [
   [0, 3],
-  [3, 5],
-  [5, 7],
-  [7, 9],
+  [3, 6],
+  [6, 10],
+  [10, 13],
 ] as const
 
 export const PROCESS_PHASE_ICONS = [
@@ -37,40 +65,44 @@ export const PROCESS_PHASE_ICONS = [
   'lucide:circle-check-big',
 ] as const
 
-export const TIMELINE_STEP_ICONS = [
-  'lucide:file-text',
-  'lucide:route',
-  'lucide:calendar-days',
-  'lucide:file-signature',
-  'lucide:package',
-  'lucide:plane',
-  'lucide:wallet',
-  'lucide:house',
-  'lucide:badge-check',
-] as const
 export const FAQ_ITEM_COUNT = 8
 
 export const GALLERY_MEDIA: Omit<GalleryImage, 'alt'>[] = [
-  { src: '/images/gallery/gallery-1.svg', width: 800, height: 600 },
-  { src: '/images/gallery/gallery-2.svg', width: 800, height: 600 },
-  { src: '/images/gallery/gallery-3.svg', width: 800, height: 600 },
+  { src: gallery7, width: 562, height: 1280 },
+  { src: gallery11, width: 960, height: 1198 },
+  { src: gallery13, width: 960, height: 1280 },
+  { src: gallery15, width: 796, height: 1280 },
+  { src: gallery16, width: 960, height: 1280 },
+  { src: gallery17, width: 960, height: 1280 },
+  { src: gallery18, width: 960, height: 1280 },
+  { src: gallery19, width: 576, height: 1280 },
+  { src: gallery20, width: 960, height: 1280 },
+  { src: gallery21, width: 874, height: 760 },
+  { src: gallery23, width: 960, height: 1280 },
+  { src: gallery25, width: 576, height: 1280 },
+  { src: gallery26, width: 960, height: 1280 },
+  { src: gallery27, width: 960, height: 1280 },
+  { src: gallery28, width: 1280, height: 960 },
+  { src: gallery37, width: 960, height: 1280 },
 ]
 
 export const REVIEW_MEDIA: Omit<ReviewSlide, 'alt'>[] = [
-  { id: 'r1', src: '/images/reviews/review-1.svg', width: 360, height: 640, channel: 'whatsapp' },
-  { id: 'r2', src: '/images/reviews/review-2.svg', width: 360, height: 640, channel: 'telegram' },
-  { id: 'r3', src: '/images/reviews/review-3.svg', width: 360, height: 640, channel: 'viber' },
-  { id: 'r4', src: '/images/reviews/review-4.svg', width: 360, height: 640, channel: 'whatsapp' },
-  { id: 'r5', src: '/images/reviews/review-5.svg', width: 360, height: 640, channel: 'telegram' },
-  { id: 'r6', src: '/images/reviews/review-6.svg', width: 360, height: 640, channel: 'viber' },
-  { id: 'r7', src: '/images/reviews/review-7.svg', width: 360, height: 640, channel: 'whatsapp' },
-  { id: 'r8', src: '/images/reviews/review-8.svg', width: 360, height: 640, channel: 'telegram' },
+  { id: 'r1', src: rev1, width: 562, height: 1280, channel: 'whatsapp' },
+  { id: 'r2', src: rev2, width: 562, height: 1280, channel: 'telegram' },
+  { id: 'r3', src: rev3, width: 562, height: 1280, channel: 'viber' },
+  { id: 'r4', src: rev4, width: 562, height: 1280, channel: 'whatsapp' },
+  { id: 'r5', src: rev5, width: 562, height: 1280, channel: 'telegram' },
+  { id: 'r6', src: rev6, width: 562, height: 1280, channel: 'viber' },
+  { id: 'r7', src: rev7, width: 562, height: 1280, channel: 'whatsapp' },
+  { id: 'r8', src: rev8, width: 562, height: 1280, channel: 'telegram' },
+  { id: 'r9', src: rev9, width: 562, height: 1280, channel: 'viber' },
+  { id: 'r10', src: rev10, width: 562, height: 1280, channel: 'whatsapp' },
 ]
 
-export const HERO_BACKGROUND = '/images/hero/van.jpg' as const
+export const HERO_BACKGROUND = heroBackground
 
 export const GEOGRAPHY_MAP = {
-  src: '/images/geography/map.jpg',
+  src: geographyMap,
   width: 1440,
   height: 804,
 } as const

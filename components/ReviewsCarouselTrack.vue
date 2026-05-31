@@ -2,21 +2,24 @@
   <div class="reviews-carousel">
     <div ref="viewport" class="reviews-carousel__viewport">
       <div class="reviews-carousel__container">
-        <article
-          v-for="slide in slides"
+        <button
+          v-for="(slide, index) in slides"
           :key="slide.id"
+          type="button"
           class="reviews-carousel__slide"
+          :aria-label="slide.alt"
+          @click="openAt(index)"
         >
-          <NuxtImg
+          <img
             :src="slide.src"
             :alt="slide.alt"
             :width="slide.width"
             :height="slide.height"
             loading="lazy"
+            decoding="async"
             class="reviews-carousel__img"
           />
-          <span class="reviews-carousel__channel">{{ t(`reviews.channel.${slide.channel}`) }}</span>
-        </article>
+        </button>
       </div>
     </div>
     <div class="reviews-carousel__controls">
@@ -76,6 +79,23 @@ function scrollPrev() {
 
 function scrollNext() {
   emblaApi.value?.scrollNext()
+}
+
+async function openAt(index: number) {
+  const [{ default: PhotoSwipe }] = await Promise.all([
+    import('photoswipe'),
+    import('photoswipe/style.css'),
+  ])
+  const pswp = new PhotoSwipe({
+    dataSource: props.slides.map(slide => ({
+      src: slide.src,
+      width: slide.width,
+      height: slide.height,
+      alt: slide.alt,
+    })),
+    index,
+  })
+  pswp.init()
 }
 
 watch(

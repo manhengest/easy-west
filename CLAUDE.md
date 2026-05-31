@@ -49,7 +49,7 @@ NODE_ENV=production pnpm start
 | `pnpm typecheck` | `vue-tsc` |
 | `pnpm lint` / `pnpm lint:eslint` | Stylelint SCSS / ESLint |
 | `pnpm validate:env` | Zod env check |
-| `pnpm assets:brand` | Regenerate favicon/OG from `doc/logos/` |
+| `pnpm assets:brand` | Generate favicon/OG from `assets/images/logo/` |
 
 ## Project layout
 
@@ -59,9 +59,8 @@ composables/
 i18n/locales/   # UA/RU copy
 server/api/     # Nitro routes (e.g. leads)
 assets/scss/    # BEM blocks
-public/brand/   # Generated brand assets
-scripts/        # validate-env, brand sync, sitemap checks
-doc/            # Product/design spec (UA)
+assets/images/  # Logos, gallery, reviews, map
+scripts/        # validate-env, brand sync, font sync
 runbooks/       # Deploy ops
 ```
 

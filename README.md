@@ -46,4 +46,3 @@ Locale files: `i18n/locales/` (`langDir: 'locales'` under the i18n module root).
 ## Docs
 
 - Architecture plan: `.cursor/plans/easy_west_architecture_47acd201.plan.md`
-- Product spec: `doc/ПОВНЕ ТЕХНІЧНЕ ЗАВДАННЯ ДЛЯ ДИЗАЙНУ LANDING PAGE EASY WEST.md`

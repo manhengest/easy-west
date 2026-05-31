@@ -2,7 +2,7 @@
   <UiBottomSheet
     v-if="isMobile"
     :model-value="modelValue"
-    :title="t('lead.title')"
+    :title="formTitle"
     overlay-id="lead-sheet"
     @update:model-value="emit('update:modelValue', $event)"
   >
@@ -11,7 +11,7 @@
   <UiModal
     v-else
     :model-value="modelValue"
-    :title="t('lead.title')"
+    :title="formTitle"
     overlay-id="lead-modal"
     @update:model-value="emit('update:modelValue', $event)"
   >
@@ -33,6 +33,8 @@ const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
 const { t } = useI18n()
 const { pushEvent } = useGtm()
 const isMobile = useMediaQuery('(max-width: 767px)')
+
+const formTitle = computed(() => t('lead.title'))
 
 watch(() => props.modelValue, (open) => {
   if (open) {

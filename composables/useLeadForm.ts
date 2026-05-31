@@ -38,6 +38,7 @@ export function useLeadForm(
     initialValues: {
       from: '',
       to: '',
+      details: '',
       phone: '',
       consentAccepted: false,
       consentPolicyVersion: CONSENT_POLICY_VERSION,
@@ -46,6 +47,7 @@ export function useLeadForm(
 
   const [from, fromAttrs] = defineField('from')
   const [to, toAttrs] = defineField('to')
+  const [details, detailsAttrs] = defineField('details')
   const [phone, phoneAttrs] = defineField('phone')
   const [consentAccepted, consentAttrs] = defineField('consentAccepted')
 
@@ -91,6 +93,7 @@ export function useLeadForm(
       idempotencyKey: idempotencyKey.value,
       from: values.from,
       to: values.to,
+      details: values.details?.trim() || undefined,
       phone: values.phone,
       locale: localeCode,
       source,
@@ -144,6 +147,8 @@ export function useLeadForm(
     fromAttrs,
     to,
     toAttrs,
+    details,
+    detailsAttrs,
     phone,
     phoneAttrs,
     consentAccepted,

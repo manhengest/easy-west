@@ -1,12 +1,12 @@
 <template>
   <section id="process" class="process" v-motion="scrollVisible()">
     <header class="process__header">
-      <h2 class="process__title">
+      <span class="process__title">
         {{ t('timeline.title') }}
-      </h2>
-      <p class="process__lead">
+      </span>
+      <h2 class="process__lead">
         {{ t('timeline.lead') }}
-      </p>
+      </h2>
     </header>
 
     <ol class="process__overview" :aria-label="t('timeline.title')">
@@ -48,18 +48,16 @@
             :key="step.id"
             class="process-step"
           >
-            <span class="process-step__icon" aria-hidden="true">
-              <UiIcon :name="step.icon ?? 'lucide:circle'" size="sm" />
-            </span>
-            <div class="process-step__body">
-              <h4 class="process-step__title">
-                <span class="process-step__num">{{ step.number }}</span>
-                {{ step.title }}
-              </h4>
-              <p class="process-step__desc">
-                {{ step.description }}
-              </p>
-            </div>
+            <h4 class="process-step__title">
+              <span class="process-step__num">{{ step.number }}</span>
+              {{ step.title }}
+            </h4>
+            <p
+              v-if="step.description"
+              class="process-step__desc"
+            >
+              {{ step.description }}
+            </p>
           </li>
         </ol>
       </article>

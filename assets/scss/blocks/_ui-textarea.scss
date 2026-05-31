@@ -1,0 +1,23 @@
+.ui-textarea {
+  @apply flex flex-col gap-1;
+
+  &__label {
+    @apply text-sm font-medium text-foreground;
+  }
+
+  &__control {
+    @apply w-full resize-none h-[90px] rounded-[var(--radius)] border border-input p-3 text-base text-foreground;
+  }
+
+  &_invalid &__control {
+    @apply border-destructive ring-1 ring-destructive;
+  }
+
+  &__error {
+    @apply text-sm text-destructive;
+  }
+
+  &__hint {
+    @apply text-sm text-muted-foreground;
+  }
+}

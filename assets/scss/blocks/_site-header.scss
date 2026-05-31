@@ -34,7 +34,7 @@
   }
 
   &__nav {
-    @apply pointer-events-none absolute inset-x-0 hidden justify-center md:flex;
+    @apply hidden justify-center md:flex;
   }
 
   &__links {
@@ -50,11 +50,11 @@
   }
 
   &__actions {
-    @apply relative z-10 ml-auto flex shrink-0 items-center gap-3 sm:gap-4 md:gap-5;
+    @apply relative z-10 flex shrink-0 items-center gap-3 sm:gap-4 md:gap-5;
   }
 
   &__cta.ui-button {
-    @apply hidden rounded-full px-5 py-2.5 text-sm font-medium md:inline-flex;
+    @apply hidden rounded-full px-5 py-2.5 text-sm font-medium lg:inline-flex;
   }
 
   &__menu-toggle {

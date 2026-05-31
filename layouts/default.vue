@@ -6,5 +6,10 @@
     </main>
     <SiteFooter />
     <CookieBanner />
+    <LeadFormHost v-model="leadOpen" :source="leadSource" />
   </div>
 </template>
+
+<script setup lang="ts">
+const { leadOpen, leadSource } = useLeadHost()
+</script>

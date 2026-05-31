@@ -6,8 +6,9 @@ export const leadSourceSchema = z.enum(LEAD_SOURCES)
 export const localeCodeSchema = z.enum(LOCALE_CODES)
 
 export const leadFormSchema = z.object({
-  from: z.string().trim().min(2, 'from'),
-  to: z.string().trim().min(2, 'to'),
+  from: z.string().trim().min(1, 'from'),
+  to: z.string().trim().min(1, 'to'),
+  details: z.string().trim().max(2000).optional().default(''),
   phone: z.string().trim().min(5, 'phone'),
   consentAccepted: z.boolean().refine(v => v === true, { message: 'consent' }),
   consentPolicyVersion: z.literal(CONSENT_POLICY_VERSION),
@@ -17,8 +18,14 @@ export type LeadFormValues = z.infer<typeof leadFormSchema>
 
 export const leadSubmitSchema = z.object({
   idempotencyKey: z.string().uuid(),
-  from: z.string().trim().min(2),
-  to: z.string().trim().min(2),
+  from: z.string().trim().min(1),
+  to: z.string().trim().min(1),
+  details: z
+    .string()
+    .trim()
+    .max(2000)
+    .optional()
+    .transform(v => (v && v.length > 0 ? v : undefined)),
   phone: z.string().trim().min(5),
   locale: localeCodeSchema,
   source: leadSourceSchema,

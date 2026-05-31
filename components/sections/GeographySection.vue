@@ -1,12 +1,12 @@
 <template>
   <section id="geography" class="geography" v-motion="scrollVisible()">
     <header class="geography__header">
-      <h2 class="geography__title">
+      <span class="geography__title">
         {{ t('geography.title') }}
-      </h2>
-      <p class="geography__lead">
+      </span>
+      <h2 class="geography__lead">
         {{ t('geography.lead') }}
-      </p>
+      </h2>
     </header>
 
     <ul class="geography__highlights">
@@ -45,12 +45,13 @@
       </div>
 
       <figure class="geography__map" v-motion="scrollVisible(180)">
-        <NuxtImg
+        <img
           :src="GEOGRAPHY_MAP.src"
           :alt="t('geography.mapAlt')"
           :width="GEOGRAPHY_MAP.width"
           :height="GEOGRAPHY_MAP.height"
           loading="lazy"
+          decoding="async"
           class="geography__map-img"
         />
       </figure>

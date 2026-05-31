@@ -18,4 +18,8 @@
   &__error {
     @apply text-sm text-destructive;
   }
+
+  &__hint {
+    @apply text-sm text-muted-foreground;
+  }
 }
