@@ -96,7 +96,7 @@
         </span>
       </label>
       <p v-if="errors.consentAccepted" class="lead-form__consent-error" role="alert">
-        {{ t('lead.errors.consent') }}
+        {{ t('lead.errors.consentAccepted') }}
       </p>
     </div>
 
@@ -120,7 +120,7 @@
       :loading="isSubmitting"
       :disabled="isSubmitting"
     >
-      {{ t('hero.formSubmit') }}
+      {{ isSubmitting ? t('hero.formSubmitting') : t('hero.formSubmit') }}
     </UiButton>
     <UiButton
       v-else
@@ -130,7 +130,7 @@
       :loading="isSubmitting"
       :disabled="isSubmitting"
     >
-      {{ t('lead.submit') }}
+      {{ isSubmitting ? t('lead.submitting') : t('lead.submit') }}
     </UiButton>
   </form>
 </template>

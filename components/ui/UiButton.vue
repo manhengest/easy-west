@@ -2,12 +2,12 @@
   <button
     :type="type"
     class="ui-button"
-    :class="variantClass"
+    :class="[variantClass, { 'ui-button_loading': loading }]"
     :disabled="disabled || loading"
     :aria-busy="loading || undefined"
   >
     <span v-if="loading" class="ui-button__spinner" aria-hidden="true" />
-    <span :class="{ 'ui-button__label_hidden': loading }">
+    <span class="ui-button__label">
       <slot />
     </span>
   </button>
