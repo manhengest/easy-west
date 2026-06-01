@@ -63,6 +63,6 @@
   }
 
   &__content {
-    @apply px-4 pb-4 pt-1 text-sm leading-relaxed text-muted-foreground;
+    @apply whitespace-pre-line px-4 pb-4 pt-1 text-sm leading-relaxed text-muted-foreground;
   }
 }

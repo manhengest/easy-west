@@ -20,9 +20,28 @@
   &__body {
     @apply px-4 pt-4 pb-7;
 
-    .ui-button {
-      display: block;
-      width: 100%;
+    .lead-form {
+      @apply gap-3;
     }
+
+    .ui-input__label,
+    .ui-textarea__label {
+      @apply text-xs;
+    }
+
+    .ui-input__control {
+      @apply px-2.5 py-2 text-sm;
+
+      min-height: 2.5rem;
+    }
+
+    .ui-textarea__control {
+      @apply h-[76px] p-2.5 text-sm;
+    }
+
+    .ui-input__hint {
+      @apply text-xs;
+    }
+
   }
 }

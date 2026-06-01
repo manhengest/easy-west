@@ -60,25 +60,11 @@
     pointer-events: none;
   }
 
-  &__submit {
-    @apply w-full gap-2;
+  &__submit-wrap {
+    @apply w-full;
   }
 
-  &_hero {
-    .lead-form__footer {
-      @apply flex flex-col items-center gap-3;
-    }
-
-    .lead-form__submit {
-      @apply py-3.5 text-base font-semibold;
-
-      .ui-icon {
-        @apply relative top-[3px];
-      }
-    }
-
-    .lead-form__footer-note {
-      @apply text-center text-sm text-muted-foreground;
-    }
+  &__submit {
+    @apply w-full gap-2;
   }
 }

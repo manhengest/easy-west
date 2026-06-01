@@ -1,12 +1,12 @@
 <template>
   <section id="reviews" class="reviews-section" v-motion="scrollVisible()">
     <header class="reviews-section__header">
-      <span class="reviews-section__title">
+      <h2 class="reviews-section__title">
         {{ t('reviews.title') }}
-      </span>
-      <h2 class="reviews-section__lead">
-        {{ t('reviews.lead') }}
       </h2>
+      <p class="reviews-section__lead">
+        {{ t('reviews.lead') }}
+      </p>
     </header>
     <ReviewsCarousel :slides="reviewSlides" />
   </section>

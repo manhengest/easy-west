@@ -1,3 +1,5 @@
+@use '../mixins' as *;
+
 .reviews-section {
   @apply bg-surface py-14;
 

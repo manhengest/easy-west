@@ -1,14 +1,11 @@
 <template>
   <section id="segments" class="segments" v-motion="scrollVisible()">
     <header class="segments__header">
-      <span class="segments__title">
+      <h2 class="segments__title">
         {{ t('segments.title') }}
-      </span>
-      <h2 class="segments__lead">
-        {{ t('segments.lead') }}
       </h2>
-      <p class="segments__unifying">
-        {{ t('segments.unifying') }}
+      <p class="segments__lead">
+        {{ t('segments.lead') }}
       </p>
     </header>
     <ul class="segments__grid">
@@ -44,9 +41,11 @@
       <p v-if="activeSegment" class="segment-detail">
         {{ activeSegment.detail }}
       </p>
-      <UiButton type="button" variant="primary" @click="onSegmentCta">
-        {{ t('segments.cta') }}
-      </UiButton>
+      <div class="segment-modal__actions">
+        <UiButton type="button" variant="primary" @click="onSegmentCta">
+          {{ t('segments.cta') }}
+        </UiButton>
+      </div>
     </UiBottomSheet>
     <UiModal
       v-else
@@ -57,9 +56,11 @@
       <p v-if="activeSegment" class="segment-detail">
         {{ activeSegment.detail }}
       </p>
-      <UiButton type="button" variant="primary" @click="onSegmentCta">
-        {{ t('segments.cta') }}
-      </UiButton>
+      <div class="segment-modal__actions">
+        <UiButton type="button" variant="primary" @click="onSegmentCta">
+          {{ t('segments.cta') }}
+        </UiButton>
+      </div>
     </UiModal>
   </section>
 </template>

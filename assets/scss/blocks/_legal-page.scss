@@ -5,8 +5,28 @@
     @apply text-2xl font-semibold text-foreground;
   }
 
+  &__lead {
+    @apply mt-2 text-lg font-medium text-foreground;
+  }
+
+  &__section {
+    @apply mt-8;
+  }
+
+  &__heading {
+    @apply text-lg font-semibold text-foreground;
+  }
+
   &__body {
     @apply mt-4 text-muted-foreground;
+
+    .legal-page__section & + & {
+      @apply mt-3;
+    }
+  }
+
+  &__list {
+    @apply mt-3 list-disc space-y-1 pl-5 text-muted-foreground;
   }
 
   &__meta {

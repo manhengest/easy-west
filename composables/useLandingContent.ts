@@ -64,7 +64,6 @@ export function useLandingContent() {
       id: t(`faq.items.${index}.id`),
       title: t(`faq.items.${index}.title`),
       description: t(`faq.items.${index}.description`),
-      important: index === FAQ_ITEM_COUNT - 1,
     })),
   )
 

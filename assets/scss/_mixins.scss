@@ -8,3 +8,7 @@
   outline: 2px solid var(--color-ring);
   outline-offset: 2px;
 }
+
+@mixin section-header-lead {
+  @apply text-2xl font-semibold text-foreground md:text-3xl;
+}

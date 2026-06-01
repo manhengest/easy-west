@@ -1,9 +1,9 @@
 <template>
   <section id="faq" class="faq-section" v-motion="scrollVisible()">
     <header class="faq-section__header">
-      <span class="faq-section__title">
+      <h2 class="faq-section__title">
         {{ t('faq.title') }}
-      </span>
+      </h2>
     </header>
     <div class="faq-section__body site-container_narrow">
       <UiAccordion :items="accordionItems" @toggle="onFaqToggle" />

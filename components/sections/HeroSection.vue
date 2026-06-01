@@ -52,14 +52,21 @@
           <span class="hero__social-text">{{ t('hero.socialProof') }}</span>
         </div>
       </div>
-      <div class="hero__media" v-motion="fadeUp(120)">
+      <div class="hero__media">
         <img
+          ref="heroImageRef"
           :src="HERO_BACKGROUND"
           :alt="t('hero.imageAlt')"
           class="hero__image"
+          :class="{
+            hero__image_ready: heroImageReady,
+            hero__image_enter: heroImageEnter,
+          }"
+          :style="heroImageEnterStyle"
           loading="eager"
           fetchpriority="high"
           decoding="async"
+          @load="prepareHeroImageEnter"
         />
       </div>
     </div>
@@ -74,11 +81,66 @@
 </template>
 
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core'
 import { HERO_BACKGROUND } from '~/content/landing-media'
 
 const { t } = useI18n()
-const { fadeUp } = useMotionPresets()
+const { fadeUp, prefersReducedMotion } = useMotionPresets()
 const { openLead } = useLeadHost()
+
+const isHeroImageVisible = useMediaQuery('(min-width: 640px)')
+const heroImageRef = ref<HTMLImageElement | null>(null)
+const heroImageReady = ref(false)
+const heroImageEnter = ref(false)
+const heroImageEnterStyle = ref<Record<string, string>>({})
+
+function showHeroImageWithoutAnimation() {
+  heroImageEnter.value = false
+  heroImageReady.value = true
+}
+
+function prepareHeroImageEnter() {
+  if (!isHeroImageVisible.value) {
+    return
+  }
+
+  if (prefersReducedMotion.value) {
+    showHeroImageWithoutAnimation()
+    return
+  }
+
+  const el = heroImageRef.value
+  if (!el) {
+    return
+  }
+
+  const { left, width } = el.getBoundingClientRect()
+  if (width === 0) {
+    return
+  }
+
+  const offset = Math.max(0, window.innerWidth - left)
+  heroImageEnterStyle.value = {
+    '--hero-slide-from': `${offset}px`,
+  }
+  heroImageEnter.value = false
+  heroImageReady.value = true
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      heroImageEnter.value = true
+    })
+  })
+}
+
+onMounted(() => {
+  nextTick(() => {
+    const el = heroImageRef.value
+    if (el?.complete) {
+      prepareHeroImageEnter()
+    }
+  })
+})
 
 function onCalculateClick() {
   openLead('hero')

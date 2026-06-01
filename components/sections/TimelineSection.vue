@@ -1,12 +1,12 @@
 <template>
   <section id="process" class="process" v-motion="scrollVisible()">
     <header class="process__header">
-      <span class="process__title">
+      <h2 class="process__title">
         {{ t('timeline.title') }}
-      </span>
-      <h2 class="process__lead">
-        {{ t('timeline.lead') }}
       </h2>
+      <p class="process__lead">
+        {{ t('timeline.lead') }}
+      </p>
     </header>
 
     <ol class="process__overview" :aria-label="t('timeline.title')">
@@ -21,7 +21,24 @@
       </li>
     </ol>
 
-    <div class="process__grid">
+    <div class="process__toggle-wrap">
+      <UiButton
+        type="button"
+        variant="ghost"
+        class="process__toggle"
+        :aria-expanded="detailsExpanded"
+        aria-controls="process-grid"
+        @click="detailsExpanded = !detailsExpanded"
+      >
+        {{ detailsExpanded ? t('timeline.lessDetails') : t('timeline.moreDetails') }}
+      </UiButton>
+    </div>
+
+    <div
+      v-show="detailsExpanded"
+      id="process-grid"
+      class="process__grid"
+    >
       <article
         v-for="(phase, phaseIndex) in processPhases"
         :key="phase.id"
@@ -69,4 +86,6 @@
 const { t } = useI18n()
 const { scrollVisible } = useMotionPresets()
 const { processPhases } = useLandingContent()
+
+const detailsExpanded = ref(false)
 </script>

@@ -1,7 +1,6 @@
 <template>
   <form
     class="lead-form"
-    :class="{ 'lead-form_hero': source === 'hero' }"
     novalidate
     @submit="onSubmit"
   >
@@ -21,10 +20,7 @@
       </ul>
     </div>
 
-    <p v-if="submitSuccess" class="lead-form__success" role="status">
-      {{ t('lead.success') }}
-    </p>
-    <p v-else-if="submitError" class="lead-form__error" role="alert">
+    <p v-if="submitError" class="lead-form__error" role="alert">
       {{ submitError === 'captcha' ? t('lead.errors.captcha') : t('lead.errors.submit') }}
     </p>
 
@@ -90,7 +86,11 @@
         >
         <span class="lead-form__consent-text">
           {{ t('lead.consent') }}
-          <NuxtLink :to="localePath('/privacy')" class="lead-form__consent-link">
+          <NuxtLink
+            :to="localePath('/privacy')"
+            class="lead-form__consent-link"
+            @click.stop="emit('privacy-navigate')"
+          >
             {{ t('nav.privacy') }}
           </NuxtLink>
         </span>
@@ -112,26 +112,17 @@
 
     <UiTurnstile ref="turnstileRef" />
 
-    <UiButton
-      v-if="source === 'hero'"
-      type="submit"
-      variant="primary"
-      class="lead-form__submit"
-      :loading="isSubmitting"
-      :disabled="isSubmitting"
-    >
-      {{ isSubmitting ? t('hero.formSubmitting') : t('hero.formSubmit') }}
-    </UiButton>
-    <UiButton
-      v-else
-      type="submit"
-      variant="primary"
-      class="lead-form__submit"
-      :loading="isSubmitting"
-      :disabled="isSubmitting"
-    >
-      {{ isSubmitting ? t('lead.submitting') : t('lead.submit') }}
-    </UiButton>
+    <div class="lead-form__submit-wrap">
+      <UiButton
+        type="submit"
+        variant="primary"
+        class="lead-form__submit"
+        :loading="isSubmitting"
+        :disabled="isSubmitting"
+      >
+        {{ isSubmitting ? t('lead.submitting') : t('lead.submit') }}
+      </UiButton>
+    </div>
   </form>
 </template>
 
@@ -141,6 +132,8 @@ import type { LeadSource } from '~/shared/lead-constants'
 const props = defineProps<{
   source: LeadSource
 }>()
+
+const emit = defineEmits<{ success: [], 'privacy-navigate': [] }>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -168,7 +161,16 @@ const {
   submitError,
   submitSuccess,
   onSubmit: baseSubmit,
+  resetIdempotency,
 } = useLeadForm(props.source, turnstileRef)
+
+watch(submitSuccess, (success) => {
+  if (success) {
+    emit('success')
+  }
+})
+
+defineExpose({ resetIdempotency })
 
 const onSubmit = (event: Event) => {
   if (honeypot.value) {

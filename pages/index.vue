@@ -12,6 +12,8 @@
 </template>
 
 <script setup lang="ts">
+import { OG_IMAGE_PATH } from '~/content/brand-assets'
+
 const { t } = useI18n()
 const config = useRuntimeConfig()
 const { openLead } = useLeadHost()
@@ -23,7 +25,7 @@ useSeoMeta({
   description: () => t('seo.description'),
   ogTitle: () => t('seo.title'),
   ogDescription: () => t('seo.description'),
-  ogImage: () => `${config.public.siteUrl}/og/og-default.jpg`,
+  ogImage: () => `${config.public.siteUrl}${OG_IMAGE_PATH}`,
   twitterCard: 'summary_large_image',
 })
 

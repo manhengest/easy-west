@@ -27,12 +27,17 @@ export default defineNuxtPlugin(() => {
     },
   ])
 
-  const trigger = useScriptTriggerConsent()
+  const consentTrigger = useScriptTriggerConsent()
   useScriptGoogleTagManager({
     id: gtmId,
-    scriptOptions: { trigger },
+    scriptOptions: { trigger: consentTrigger },
   })
 
-  useState('ew-gtm-trigger', () => trigger)
   initialized.value = true
+
+  return {
+    provide: {
+      gtmConsentTrigger: consentTrigger,
+    },
+  }
 })

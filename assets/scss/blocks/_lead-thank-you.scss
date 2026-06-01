@@ -1,0 +1,15 @@
+.lead-thank-you {
+  @apply flex flex-col items-center gap-4 px-2 py-8 text-center;
+
+  &__icon-wrap {
+    @apply flex size-16 items-center justify-center rounded-full bg-green-50;
+  }
+
+  &__icon {
+    @apply size-10 text-green-600;
+  }
+
+  &__message {
+    @apply max-w-xs text-base font-medium leading-snug text-foreground;
+  }
+}

@@ -1,3 +1,5 @@
+import { OG_IMAGE_PATH } from '~/content/brand-assets'
+
 /**
  * Shared SEO for static legal / accessibility pages.
  * x-default canonical target is / (primary market, UA default locale).
@@ -13,7 +15,7 @@ export function usePageSeo(titleKey: string) {
     description: () => t('seo.description'),
     ogTitle: () => t(titleKey),
     ogDescription: () => t('seo.description'),
-    ogImage: () => `${config.public.siteUrl}/og/og-default.jpg`,
+    ogImage: () => `${config.public.siteUrl}${OG_IMAGE_PATH}`,
     twitterCard: 'summary_large_image',
   })
 }

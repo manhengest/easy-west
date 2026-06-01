@@ -41,8 +41,8 @@ async function main() {
     process.exit(1)
   }
 
-  await buildOg(ogSource, join(outOg, 'og-default.jpg'))
-  console.log('brand: logo-horizontal-white.png → og/og-default.jpg')
+  await buildOg(ogSource, join(outOg, 'og-share.jpg'))
+  console.log('brand: logo-horizontal-white.png → og/og-share.jpg')
 }
 
 main().catch((err) => {

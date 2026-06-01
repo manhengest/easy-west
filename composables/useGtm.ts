@@ -30,11 +30,7 @@ function pushConsentUpdate(granted: boolean) {
 export function useGtm() {
   const config = useRuntimeConfig()
   const gtmId = config.public.gtmId
-
-  const trigger = useState<ReturnType<typeof useScriptTriggerConsent> | null>(
-    'ew-gtm-trigger',
-    () => null,
-  )
+  const nuxtApp = useNuxtApp()
 
   function pushEvent(event: string, payload: Record<string, unknown> = {}) {
     const dataLayer = ensureDataLayer()
@@ -42,7 +38,7 @@ export function useGtm() {
   }
 
   function grantAllConsent() {
-    trigger.value?.accept()
+    nuxtApp.$gtmConsentTrigger?.accept()
     pushConsentUpdate(true)
   }
 

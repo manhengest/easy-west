@@ -65,25 +65,25 @@ export const PROCESS_PHASE_ICONS = [
   'lucide:circle-check-big',
 ] as const
 
-export const FAQ_ITEM_COUNT = 8
+export const FAQ_ITEM_COUNT = 7
 
 export const GALLERY_MEDIA: Omit<GalleryImage, 'alt'>[] = [
-  { src: gallery7, width: 562, height: 1280 },
   { src: gallery11, width: 960, height: 1198 },
+  { src: gallery18, width: 960, height: 1280 },
+  { src: gallery27, width: 960, height: 1280 },
+  { src: gallery37, width: 960, height: 1280 },
+  { src: gallery7, width: 562, height: 1280 },
   { src: gallery13, width: 960, height: 1280 },
   { src: gallery15, width: 796, height: 1280 },
   { src: gallery16, width: 960, height: 1280 },
   { src: gallery17, width: 960, height: 1280 },
-  { src: gallery18, width: 960, height: 1280 },
   { src: gallery19, width: 576, height: 1280 },
   { src: gallery20, width: 960, height: 1280 },
   { src: gallery21, width: 874, height: 760 },
   { src: gallery23, width: 960, height: 1280 },
   { src: gallery25, width: 576, height: 1280 },
   { src: gallery26, width: 960, height: 1280 },
-  { src: gallery27, width: 960, height: 1280 },
   { src: gallery28, width: 1280, height: 960 },
-  { src: gallery37, width: 960, height: 1280 },
 ]
 
 export const REVIEW_MEDIA: Omit<ReviewSlide, 'alt'>[] = [

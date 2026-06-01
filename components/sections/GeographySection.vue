@@ -1,12 +1,12 @@
 <template>
   <section id="geography" class="geography" v-motion="scrollVisible()">
     <header class="geography__header">
-      <span class="geography__title">
+      <h2 class="geography__title">
         {{ t('geography.title') }}
-      </span>
-      <h2 class="geography__lead">
-        {{ t('geography.lead') }}
       </h2>
+      <p class="geography__lead">
+        {{ t('geography.lead') }}
+      </p>
     </header>
 
     <ul class="geography__highlights">

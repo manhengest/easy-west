@@ -1,10 +1,12 @@
 :root {
   --site-header-height: 4.0625rem;
+  --site-header-scroll-gap: 1rem;
+  --site-header-scroll-offset: calc(var(--site-header-height) + var(--site-header-scroll-gap));
 }
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: var(--site-header-height);
+  scroll-padding-top: var(--site-header-scroll-offset);
 
   @media (prefers-reduced-motion: reduce) {
     scroll-behavior: auto;

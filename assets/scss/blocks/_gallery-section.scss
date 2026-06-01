@@ -1,3 +1,5 @@
+@use '../mixins' as *;
+
 .gallery-section {
   @apply py-14;
 

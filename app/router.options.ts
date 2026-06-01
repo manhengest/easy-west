@@ -1,4 +1,5 @@
 import type { RouterConfig } from '@nuxt/schema'
+import { getSiteHeaderScrollOffsetPx } from '~/shared/site-layout'
 
 function prefersReducedMotion(): boolean {
   if (import.meta.server) {
@@ -16,6 +17,7 @@ export default {
     if (to.hash) {
       return {
         el: to.hash,
+        top: getSiteHeaderScrollOffsetPx(),
         behavior: prefersReducedMotion() ? 'auto' : 'smooth',
       }
     }
