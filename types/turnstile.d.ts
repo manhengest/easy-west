@@ -5,7 +5,7 @@ interface TurnstileRenderOptions {
   'error-callback'?: () => void
   'expired-callback'?: () => void
   theme?: 'light' | 'dark' | 'auto'
-  size?: 'normal' | 'compact'
+  size?: 'normal' | 'compact' | 'flexible'
 }
 
 interface TurnstileInstance {

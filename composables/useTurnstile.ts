@@ -93,6 +93,7 @@ export function useTurnstile(containerRef: Ref<HTMLElement | null>) {
         sitekey: siteKey.value,
         action: LEAD_TURNSTILE_ACTION,
         theme: 'auto',
+        size: 'flexible',
         callback: (nextToken: string) => {
           token.value = nextToken
         },

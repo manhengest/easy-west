@@ -1,8 +1,13 @@
 .ui-turnstile {
-  @apply flex flex-col gap-1;
+  @apply flex w-full flex-col gap-1;
 
   &__widget {
-    @apply min-h-[65px];
+    @apply min-h-[65px] w-full;
+
+    > div,
+    iframe {
+      width: 100% !important;
+    }
   }
 
   &__error {

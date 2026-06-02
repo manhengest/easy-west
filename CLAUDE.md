@@ -49,7 +49,7 @@ NODE_ENV=production pnpm start
 | `pnpm typecheck` | `vue-tsc` |
 | `pnpm lint` / `pnpm lint:eslint` | Stylelint SCSS / ESLint |
 | `pnpm validate:env` | Zod env check |
-| `pnpm assets:brand` | Generate favicon/OG from `assets/images/logo/` |
+| `pnpm assets:brand` | Sync favicons from `assets/images/favicon/`, OG from `assets/images/logo/` |
 
 ## Project layout
 

@@ -1,40 +1,51 @@
-import { existsSync, mkdirSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const faviconDir = join(root, 'assets/images/favicon')
 const logoDir = join(root, 'assets/images/logo')
+const publicDir = join(root, 'public')
 const outOg = join(root, 'public/og')
 
-const faviconSource = join(logoDir, 'favicon.png')
 const ogSource = join(logoDir, 'logo-horizontal-white.png')
 
-async function buildFavicon(iconPath, faviconPath) {
-  await sharp(iconPath).resize(32, 32).png().toFile(faviconPath)
-}
+const legacyPublicFavicons = ['favicon.png', 'apple-touch-icon.png']
 
-async function buildAppleTouch(iconPath, dest) {
-  await sharp(iconPath).resize(180, 180).png().toFile(dest)
+function syncFavicons() {
+  if (!existsSync(faviconDir)) {
+    console.error('brand: missing assets/images/favicon/')
+    process.exit(1)
+  }
+
+  mkdirSync(publicDir, { recursive: true })
+
+  const files = readdirSync(faviconDir)
+  for (const file of files) {
+    cpSync(join(faviconDir, file), join(publicDir, file), { force: true })
+  }
+
+  for (const legacy of legacyPublicFavicons) {
+    const legacyPath = join(publicDir, legacy)
+    if (existsSync(legacyPath)) {
+      unlinkSync(legacyPath)
+    }
+  }
+
+  console.log(`brand: ${files.length} files from assets/images/favicon/ → public/`)
 }
 
 async function buildOg(sourcePath, dest) {
   mkdirSync(dirname(dest), { recursive: true })
   await sharp(sourcePath)
-    .resize(1200, 630, { fit: 'contain', background: '#df202e' })
+    .resize(1200, 630, { fit: 'contain', background: '#fff' })
     .jpeg({ quality: 85 })
     .toFile(dest)
 }
 
 async function main() {
-  if (!existsSync(faviconSource)) {
-    console.error('brand: missing assets/images/logo/favicon.png')
-    process.exit(1)
-  }
-
-  await buildFavicon(faviconSource, join(root, 'public/favicon.png'))
-  await buildAppleTouch(faviconSource, join(root, 'public/apple-touch-icon.png'))
-  console.log('brand: favicon.png → public/favicon.png, apple-touch-icon.png')
+  syncFavicons()
 
   if (!existsSync(ogSource)) {
     console.error('brand: missing assets/images/logo/logo-horizontal-white.png')
