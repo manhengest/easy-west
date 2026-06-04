@@ -39,7 +39,7 @@ function syncFavicons() {
 async function buildOg(sourcePath, dest) {
   mkdirSync(dirname(dest), { recursive: true })
   await sharp(sourcePath)
-    .resize(1200, 630, { fit: 'contain', background: '#fff' })
+    .resize(1200, 630, { fit: 'contain', background: '#ffffff' })
     .jpeg({ quality: 85 })
     .toFile(dest)
 }
