@@ -1,11 +1,52 @@
 <template>
   <article class="legal-page">
     <h1 class="legal-page__title">{{ t('nav.terms') }}</h1>
-    <p class="legal-page__body">{{ t('legal.placeholder') }}</p>
+
+    <section
+      v-for="(section, index) in sections"
+      :key="index"
+      class="legal-page__section"
+    >
+      <h2 class="legal-page__heading">
+        {{ section.heading }}
+      </h2>
+      <p
+        v-for="(paragraph, pIndex) in section.paragraphs"
+        :key="`p-${index}-${pIndex}`"
+        class="legal-page__body"
+      >
+        {{ paragraph }}
+      </p>
+      <ul
+        v-if="section.list?.length"
+        class="legal-page__list"
+      >
+        <li
+          v-for="(item, liIndex) in section.list"
+          :key="`li-${index}-${liIndex}`"
+        >
+          {{ item }}
+        </li>
+      </ul>
+      <p
+        v-for="(paragraph, pIndex) in section.paragraphsAfter ?? []"
+        :key="`pa-${index}-${pIndex}`"
+        class="legal-page__body"
+      >
+        {{ paragraph }}
+      </p>
+    </section>
   </article>
 </template>
 
 <script setup lang="ts">
-const { t } = useI18n()
+import { termsOfUseRu, termsOfUseUa } from '~/constants/terms-of-use'
+
+const { t, locale } = useI18n()
+
+const sections = computed(() =>
+  locale.value === 'ru' ? termsOfUseRu : termsOfUseUa,
+)
+
 usePageSeo('nav.terms')
 </script>

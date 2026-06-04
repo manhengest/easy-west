@@ -1,5 +1,5 @@
 import type { GalleryImage, ReviewSlide } from '~/types/content'
-import heroBackground from '~/assets/images/mc.png'
+import heroVideo from '~/assets/images/van.webm'
 import geographyMap from '~/assets/images/map.jpg'
 import gallery7 from '~/assets/images/gallery/gallery-7.jpg'
 import gallery11 from '~/assets/images/gallery/gallery-11.jpg'
@@ -99,7 +99,7 @@ export const REVIEW_MEDIA: Omit<ReviewSlide, 'alt'>[] = [
   { id: 'r10', src: rev10, width: 562, height: 1280, channel: 'whatsapp' },
 ]
 
-export const HERO_BACKGROUND = heroBackground
+export const HERO_VIDEO = heroVideo
 
 export const GEOGRAPHY_MAP = {
   src: geographyMap,
