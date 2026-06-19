@@ -1,3 +1,4 @@
+import { useMediaQuery } from '@vueuse/core'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { CONSENT_POLICY_VERSION } from '~/shared/lead-constants'
@@ -25,6 +26,7 @@ export function useLeadForm(
   const { hiddenFields } = useLeadAttribution()
   const { pushEvent } = useGtm()
   const config = useRuntimeConfig()
+  const isMobile = useMediaQuery('(max-width: 767px)')
 
   const idempotencyKey = ref(crypto.randomUUID())
   const isSubmitting = ref(false)
@@ -97,6 +99,7 @@ export function useLeadForm(
       phone: values.phone,
       locale: localeCode,
       source,
+      device: isMobile.value ? 'mobile' as const : 'desktop' as const,
       consentAccepted: true as const,
       consentPolicyVersion: CONSENT_POLICY_VERSION,
       turnstileToken,

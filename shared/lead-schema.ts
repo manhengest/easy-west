@@ -1,8 +1,9 @@
 import { z } from 'zod'
-import { CONSENT_POLICY_VERSION, LEAD_SOURCES, LOCALE_CODES } from './lead-constants'
+import { CONSENT_POLICY_VERSION, LEAD_DEVICES, LEAD_SOURCES, LOCALE_CODES } from './lead-constants'
 import { normalizePhoneToE164 } from './phone'
 
 export const leadSourceSchema = z.enum(LEAD_SOURCES)
+export const leadDeviceSchema = z.enum(LEAD_DEVICES)
 export const localeCodeSchema = z.enum(LOCALE_CODES)
 
 export const leadFormSchema = z.object({
@@ -29,6 +30,7 @@ export const leadSubmitSchema = z.object({
   phone: z.string().trim().min(5),
   locale: localeCodeSchema,
   source: leadSourceSchema,
+  device: leadDeviceSchema,
   consentAccepted: z.literal(true),
   consentPolicyVersion: z.literal(CONSENT_POLICY_VERSION),
   turnstileToken: z.string().min(1),

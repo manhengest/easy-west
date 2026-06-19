@@ -7,10 +7,13 @@ export const LEAD_SOURCES = [
   'header',
   'cta',
   'segment',
-  'modal',
 ] as const
 
 export type LeadSource = (typeof LEAD_SOURCES)[number]
+
+export const LEAD_DEVICES = ['mobile', 'desktop'] as const
+
+export type LeadDevice = (typeof LEAD_DEVICES)[number]
 
 export const LOCALE_CODES = ['ua', 'ru'] as const
 export type LocaleCode = (typeof LOCALE_CODES)[number]

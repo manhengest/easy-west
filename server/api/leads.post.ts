@@ -61,7 +61,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const receivedAt = new Date().toISOString()
-  const leadId = crypto.randomUUID()
+  const leadId = crypto.randomUUID().replace(/-/g, '').slice(0, 10)
 
   const notifyResult = await notifyLeadChannels(
     {

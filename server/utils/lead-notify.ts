@@ -1,3 +1,4 @@
+import type { LeadDevice, LeadSource } from '~/shared/lead-constants'
 import type { LeadSubmitPayload } from '~/shared/lead-schema'
 
 export interface LeadNotificationContext {
@@ -28,6 +29,26 @@ function telegramTelLink(e164: string): string {
   return `<a href="tel:${safe}">${safe}</a>`
 }
 
+const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
+  hero: 'Банер',
+  header: 'Шапка',
+  cta: 'Нижній CTA',
+  segment: 'Блок "Який переїзд вам потрібен"',
+}
+
+const LEAD_DEVICE_LABELS: Record<LeadDevice, string> = {
+  mobile: 'Мобільний',
+  desktop: 'Десктоп',
+}
+
+function formatLeadSource(source: LeadSource): string {
+  return LEAD_SOURCE_LABELS[source]
+}
+
+function formatLeadDevice(device: LeadDevice): string {
+  return LEAD_DEVICE_LABELS[device]
+}
+
 function optionalRow(label: string, value: string | undefined): string {
   if (!value) {
     return ''
@@ -44,8 +65,9 @@ function buildLeadEmailHtml(ctx: LeadNotificationContext): string {
     optionalRow('To', payload.to),
     optionalRow('Details', payload.details),
     optionalRow('Phone', phoneE164),
-    optionalRow('Locale', payload.locale),
-    optionalRow('Source', payload.source),
+    optionalRow('Locale', payload.locale.toUpperCase()),
+    optionalRow('Source', formatLeadSource(payload.source)),
+    optionalRow('Device', formatLeadDevice(payload.device)),
     optionalRow('Consent policy', payload.consentPolicyVersion),
     optionalRow('UTM source', payload.utmSource),
     optionalRow('UTM medium', payload.utmMedium),
@@ -70,7 +92,8 @@ function buildTelegramMessage(ctx: LeadNotificationContext): string {
       : []),
     `<b>Телефон:</b> ${telegramTelLink(phoneE164)}`,
     `--------------------------------`,
-    `<b>Мова:</b> ${escapeHtml(payload.locale)} · <b>Форма:</b> ${escapeHtml(payload.source)}`,
+    `<b>Мова:</b> ${escapeHtml(payload.locale.toUpperCase())} · <b>Форма:</b> ${escapeHtml(formatLeadSource(payload.source))}`,
+    `<b>Пристрій:</b> ${escapeHtml(formatLeadDevice(payload.device))}`,
     `<b>ID:</b> ${escapeHtml(leadId)}`,
   ]
   return lines.join('\n')
