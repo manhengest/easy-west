@@ -1,17 +1,44 @@
 <template>
-  <a
-    :href="href"
-    class="ui-messenger-link"
-    :class="[channelClass, appearanceClass]"
-    target="_blank"
-    rel="noopener noreferrer"
-    @click="onClick"
-  >
-    <UiIcon :name="iconName" size="sm" />
-    <span class="ui-messenger-link__label">
-      <slot>{{ defaultLabel }}</slot>
-    </span>
-  </a>
+  <ClientOnly>
+    <button
+      v-if="revealProtected"
+      type="button"
+      class="ui-messenger-link"
+      :class="[channelClass, appearanceClass]"
+      @click="open"
+    >
+      <UiIcon :name="iconName" size="sm" />
+      <span class="ui-messenger-link__label">
+        <slot>{{ defaultLabel }}</slot>
+      </span>
+    </button>
+    <a
+      v-else
+      :href="href"
+      class="ui-messenger-link"
+      :class="[channelClass, appearanceClass]"
+      :rel="opensExternally ? 'noopener noreferrer' : undefined"
+      :target="opensExternally ? '_blank' : undefined"
+      @click="trackDirectClick"
+    >
+      <UiIcon :name="iconName" size="sm" />
+      <span class="ui-messenger-link__label">
+        <slot>{{ defaultLabel }}</slot>
+      </span>
+    </a>
+    <template #fallback>
+      <span
+        class="ui-messenger-link"
+        :class="[channelClass, appearanceClass]"
+        role="presentation"
+      >
+        <UiIcon :name="iconName" size="sm" />
+        <span class="ui-messenger-link__label">
+          <slot>{{ defaultLabel }}</slot>
+        </span>
+      </span>
+    </template>
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">
@@ -23,7 +50,7 @@ const props = withDefaults(
     label?: string
     appearance?: 'default' | 'on-dark'
   }>(),
-  { appearance: 'default' },
+  { appearance: 'default', label: undefined },
 )
 
 const appearanceClass = computed(() =>
@@ -31,10 +58,9 @@ const appearanceClass = computed(() =>
 )
 
 const { t } = useI18n()
-const { hrefFor } = useContacts()
-const { pushEvent } = useGtm()
+const { href, revealProtected, open, trackDirectClick } = useMessengerLink(() => props.channel)
 
-const href = computed(() => hrefFor(props.channel))
+const opensExternally = computed(() => props.channel !== 'phone')
 
 const iconName = computed(() => {
   switch (props.channel) {
@@ -45,6 +71,8 @@ const iconName = computed(() => {
     case 'viber':
       return 'simple-icons:viber'
     case 'phone':
+      return 'lucide:phone'
+    default:
       return 'lucide:phone'
   }
 })
@@ -58,20 +86,4 @@ const defaultLabel = computed(() => {
   return t(`contacts.${props.channel}`)
 })
 
-const gtmEvent = computed(() => {
-  switch (props.channel) {
-    case 'whatsapp':
-      return 'click_whatsapp'
-    case 'telegram':
-      return 'click_telegram'
-    case 'viber':
-      return 'click_viber'
-    case 'phone':
-      return 'click_phone'
-  }
-})
-
-function onClick() {
-  pushEvent(gtmEvent.value, { channel: props.channel })
-}
 </script>

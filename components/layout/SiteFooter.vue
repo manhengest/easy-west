@@ -10,7 +10,7 @@
               class="site-footer__logo"
               loading="lazy"
               decoding="async"
-            />
+            >
           </NuxtLink>
           <p class="site-footer__description">
             {{ t('footer.description') }}
@@ -36,7 +36,24 @@
           </h3>
           <ul class="site-footer__contact-list">
             <li v-for="item in contactItems" :key="item.id">
+              <ClientOnly v-if="item.revealProtected">
+                <button
+                  type="button"
+                  class="site-footer__contact-link"
+                  @click="openMessenger(item.channel)"
+                >
+                  <UiIcon :name="item.icon" size="sm" class="site-footer__contact-icon" />
+                  <span>{{ item.label }}</span>
+                </button>
+                <template #fallback>
+                  <span class="site-footer__contact-link" role="presentation">
+                    <UiIcon :name="item.icon" size="sm" class="site-footer__contact-icon" />
+                    <span>{{ item.label }}</span>
+                  </span>
+                </template>
+              </ClientOnly>
               <a
+                v-else
                 :href="item.href"
                 class="site-footer__contact-link"
                 :target="item.external ? '_blank' : undefined"
@@ -76,6 +93,7 @@ import { LOGO_HORIZONTAL_SRC } from '~/content/brand-assets'
 const { t } = useI18n()
 const localePath = useLocalePath()
 const { links } = useContacts()
+const { openMessenger } = useMessengerActions()
 const year = new Date().getFullYear()
 
 const footerNavLinks = [
@@ -93,27 +111,28 @@ const contactItems = computed(() => [
     label: links.value.phone,
     icon: 'lucide:phone',
     external: false,
+    revealProtected: false as const,
   },
   {
     id: 'whatsapp',
-    href: links.value.whatsapp,
+    channel: 'whatsapp' as const,
     label: t('contacts.whatsapp'),
     icon: 'simple-icons:whatsapp',
-    external: true,
+    revealProtected: true as const,
   },
   {
     id: 'telegram',
-    href: links.value.telegram,
+    channel: 'telegram' as const,
     label: t('contacts.telegram'),
     icon: 'simple-icons:telegram',
-    external: true,
+    revealProtected: true as const,
   },
   {
     id: 'viber',
-    href: links.value.viber,
+    channel: 'viber' as const,
     label: t('contacts.viber'),
     icon: 'simple-icons:viber',
-    external: true,
+    revealProtected: true as const,
   },
   {
     id: 'email',
@@ -121,6 +140,7 @@ const contactItems = computed(() => [
     label: links.value.email,
     icon: 'lucide:mail',
     external: false,
+    revealProtected: false as const,
   },
 ])
 </script>

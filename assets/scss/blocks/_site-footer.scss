@@ -42,6 +42,10 @@
 
   &__contact-link {
     @apply inline-flex items-center gap-2.5 font-medium text-[#333333] transition-colors hover:text-primary;
+
+    &:is(button) {
+      @apply cursor-pointer border-0 bg-transparent p-0 text-left;
+    }
   }
 
   &__contact-icon {
