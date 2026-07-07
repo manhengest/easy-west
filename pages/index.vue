@@ -18,7 +18,8 @@ const { t } = useI18n()
 const config = useRuntimeConfig()
 const { openLead } = useLeadHost()
 
-useLocaleHead({ seo: true })
+const i18nHead = useLocaleHead({ seo: true })
+useHead(i18nHead)
 
 useSeoMeta({
   title: () => t('seo.title'),

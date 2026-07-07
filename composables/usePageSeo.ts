@@ -8,7 +8,8 @@ export function usePageSeo(titleKey: string) {
   const { t } = useI18n()
   const config = useRuntimeConfig()
 
-  useLocaleHead({ seo: true })
+  const i18nHead = useLocaleHead({ seo: true })
+  useHead(i18nHead)
 
   useSeoMeta({
     title: () => t(titleKey),

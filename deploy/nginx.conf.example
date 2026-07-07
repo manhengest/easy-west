@@ -1,18 +1,46 @@
 # Example reverse proxy for EASY WEST (Nitro node-server on :3000)
 # Place in /etc/nginx/sites-available/easy-west and symlink sites-enabled.
+#
+# IMPORTANT: This file must be loaded FIRST among nginx site configs so that the
+# default_server blocks below catch requests for unknown domains before any other
+# vhost gets a chance to respond. Symlink name "00-easy-west" guarantees ordering.
 
 upstream easy_west {
   server 127.0.0.1:3000;
   keepalive 32;
 }
 
+# ── Catch-all: reject requests for any domain that is NOT easy-west.com ────────
+# Without this block, nginx falls back to the first ssl server block and serves
+# EASY WEST content under foreign domains (e.g. a previous tenant whose DNS still
+# points to this IP), which causes Google to index the site under the wrong domain.
+server {
+  listen 80  default_server;
+  listen [::]:80  default_server;
+  server_name _;
+  return 444;
+}
+
+server {
+  listen 443 ssl default_server;
+  listen [::]:443 ssl default_server;
+  server_name _;
+
+  # Reuse the real cert — TLS handshake completes, then we drop the connection.
+  ssl_certificate     /etc/letsencrypt/live/easy-west.example/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/easy-west.example/privkey.pem;
+
+  return 444;
+}
+# ──────────────────────────────────────────────────────────────────────────────
+
 server {
   listen 443 ssl http2;
   listen [::]:443 ssl http2;
   server_name easy-west.example www.easy-west.example;
 
-  # ssl_certificate /etc/letsencrypt/live/easy-west.example/fullchain.pem;
-  # ssl_certificate_key /etc/letsencrypt/live/easy-west.example/privkey.pem;
+  ssl_certificate     /etc/letsencrypt/live/easy-west.example/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/easy-west.example/privkey.pem;
 
   client_max_body_size 1m;
 
