@@ -1,10 +1,8 @@
 import { useMediaQuery } from '@vueuse/core'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
-import { CONSENT_POLICY_VERSION } from '~/shared/lead-constants'
+import { CONSENT_POLICY_VERSION, type LeadSource, type LocaleCode } from '~/shared/lead-constants'
 import { leadFormSchema } from '~/shared/lead-schema'
-import type { LeadSource } from '~/shared/lead-constants'
-import type { LocaleCode } from '~/shared/lead-constants'
 
 interface LeadApiResponse {
   ok: true
@@ -23,7 +21,7 @@ export function useLeadForm(
   turnstileRef?: Ref<TurnstileBridge | null>,
 ) {
   const { locale, t } = useI18n()
-  const { hiddenFields } = useLeadAttribution()
+  const { hiddenFields, gtmAttribution } = useLeadAttribution()
   const { pushEvent } = useGtm()
   const config = useRuntimeConfig()
   const isMobile = useMediaQuery('(max-width: 767px)')
@@ -88,7 +86,7 @@ export function useLeadForm(
 
     isSubmitting.value = true
     submitError.value = null
-    pushEvent('lead_submit_attempt', { source, locale: locale.value })
+    pushEvent('lead_submit_attempt', { source, locale: locale.value, ...gtmAttribution.value })
 
     const localeCode = locale.value as LocaleCode
     const payload = {
@@ -113,14 +111,19 @@ export function useLeadForm(
         body: payload,
       })
       submitSuccess.value = true
-      pushEvent('lead_submit_success', { source, leadId: res.leadId, locale: locale.value })
+      pushEvent('lead_submit_success', {
+        source,
+        leadId: res.leadId,
+        locale: locale.value,
+        ...gtmAttribution.value,
+      })
     }
     catch (err: unknown) {
-      pushEvent('lead_submit_error', { source, locale: locale.value })
+      pushEvent('lead_submit_error', { source, locale: locale.value, ...gtmAttribution.value })
       if (err && typeof err === 'object' && 'statusCode' in err) {
         const statusCode = (err as { statusCode: number }).statusCode
         if (statusCode === 400) {
-          pushEvent('lead_validation_error', { source })
+          pushEvent('lead_validation_error', { source, ...gtmAttribution.value })
           setFieldError('phone', 'phone')
         }
         if (statusCode === 403) {

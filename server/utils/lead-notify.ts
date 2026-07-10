@@ -56,6 +56,13 @@ function optionalRow(label: string, value: string | undefined): string {
   return `<tr><td><strong>${escapeHtml(label)}</strong></td><td>${escapeHtml(value)}</td></tr>`
 }
 
+function optionalTelegramLine(label: string, value: string | undefined): string | null {
+  if (!value) {
+    return null
+  }
+  return `<b>${escapeHtml(label)}:</b> ${escapeHtml(value)}`
+}
+
 function buildLeadEmailHtml(ctx: LeadNotificationContext): string {
   const { leadId, receivedAt, phoneE164, payload } = ctx
   const rows = [
@@ -94,6 +101,15 @@ function buildTelegramMessage(ctx: LeadNotificationContext): string {
     `--------------------------------`,
     `<b>Мова:</b> ${escapeHtml(payload.locale.toUpperCase())} · <b>Форма:</b> ${escapeHtml(formatLeadSource(payload.source))}`,
     `<b>Пристрій:</b> ${escapeHtml(formatLeadDevice(payload.device))}`,
+    ...[
+      optionalTelegramLine('UTM source', payload.utmSource),
+      optionalTelegramLine('UTM medium', payload.utmMedium),
+      optionalTelegramLine('UTM campaign', payload.utmCampaign),
+      optionalTelegramLine('UTM content', payload.utmContent),
+      optionalTelegramLine('UTM term', payload.utmTerm),
+      optionalTelegramLine('Referrer', payload.referrer),
+      optionalTelegramLine('Landing', payload.landingPath),
+    ].filter((line): line is string => line !== null),
     `<b>ID:</b> ${escapeHtml(leadId)}`,
   ]
   return lines.join('\n')

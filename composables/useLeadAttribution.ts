@@ -1,3 +1,5 @@
+import type { LocationQuery } from 'vue-router'
+
 const ATTRIBUTION_COOKIE = 'ew_attribution'
 const UTM_KEYS = [
   'utm_source',
@@ -29,6 +31,30 @@ function parseAttribution(raw: string | null | undefined): LeadAttribution | nul
   }
 }
 
+function hasUtmParams(query: LocationQuery): boolean {
+  return UTM_KEYS.some(key => typeof query[key] === 'string' && query[key] !== '')
+}
+
+function readUtmFromQuery(query: LocationQuery): Partial<Pick<LeadAttribution, 'utmSource' | 'utmMedium' | 'utmCampaign' | 'utmContent' | 'utmTerm'>> {
+  const next: Partial<Pick<LeadAttribution, 'utmSource' | 'utmMedium' | 'utmCampaign' | 'utmContent' | 'utmTerm'>> = {}
+  if (typeof query.utm_source === 'string' && query.utm_source !== '') {
+    next.utmSource = query.utm_source
+  }
+  if (typeof query.utm_medium === 'string' && query.utm_medium !== '') {
+    next.utmMedium = query.utm_medium
+  }
+  if (typeof query.utm_campaign === 'string' && query.utm_campaign !== '') {
+    next.utmCampaign = query.utm_campaign
+  }
+  if (typeof query.utm_content === 'string' && query.utm_content !== '') {
+    next.utmContent = query.utm_content
+  }
+  if (typeof query.utm_term === 'string' && query.utm_term !== '') {
+    next.utmTerm = query.utm_term
+  }
+  return next
+}
+
 export function useLeadAttribution() {
   const route = useRoute()
   const cookie = useCookie<string | null>(ATTRIBUTION_COOKIE, {
@@ -38,25 +64,32 @@ export function useLeadAttribution() {
   })
 
   function captureFromQuery() {
-    if (cookie.value) {
+    if (!import.meta.client) {
       return
     }
 
-    const q = route.query
-    const next: LeadAttribution = {
-      utmSource: typeof q.utm_source === 'string' ? q.utm_source : undefined,
-      utmMedium: typeof q.utm_medium === 'string' ? q.utm_medium : undefined,
-      utmCampaign: typeof q.utm_campaign === 'string' ? q.utm_campaign : undefined,
-      utmContent: typeof q.utm_content === 'string' ? q.utm_content : undefined,
-      utmTerm: typeof q.utm_term === 'string' ? q.utm_term : undefined,
-      referrer: import.meta.client ? document.referrer || undefined : undefined,
-      landingPath: route.fullPath,
+    const existing = parseAttribution(cookie.value)
+    const incomingUtm = readUtmFromQuery(route.query)
+    const incomingHasUtm = hasUtmParams(route.query)
+
+    if (!incomingHasUtm && existing) {
+      return
     }
+
+    const next: LeadAttribution = incomingHasUtm
+      ? {
+          ...existing,
+          ...incomingUtm,
+          referrer: document.referrer || existing?.referrer,
+          landingPath: route.fullPath,
+        }
+      : {
+          referrer: document.referrer || undefined,
+          landingPath: route.fullPath,
+        }
 
     cookie.value = JSON.stringify(next)
   }
-
-  onMounted(captureFromQuery)
 
   const attribution = computed(() => parseAttribution(cookie.value))
 
@@ -70,5 +103,15 @@ export function useLeadAttribution() {
     landingPath: attribution.value?.landingPath ?? '',
   }))
 
-  return { attribution, hiddenFields, captureFromQuery }
+  const gtmAttribution = computed(() => ({
+    utm_source: hiddenFields.value.utmSource || undefined,
+    utm_medium: hiddenFields.value.utmMedium || undefined,
+    utm_campaign: hiddenFields.value.utmCampaign || undefined,
+    utm_content: hiddenFields.value.utmContent || undefined,
+    utm_term: hiddenFields.value.utmTerm || undefined,
+    referrer: hiddenFields.value.referrer || undefined,
+    landing_path: hiddenFields.value.landingPath || undefined,
+  }))
+
+  return { attribution, hiddenFields, gtmAttribution, captureFromQuery }
 }

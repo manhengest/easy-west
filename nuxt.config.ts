@@ -12,6 +12,10 @@ const prerenderRoutes = [
   ...staticPages.map(page => (page ? `/${page}` : '/')),
   ...staticPages.map(page => (page ? `/ru/${page}` : '/ru')),
 ]
+// `/ru/**` does not match `/ru` itself — keep an explicit rule for the locale root.
+const ruPrerenderRules = {
+  '/ru': { prerender: true },
+}
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -156,6 +160,7 @@ export default defineNuxtConfig({
     '/cookies': { prerender: true },
     '/terms': { prerender: true },
     '/accessibility': { prerender: true },
+    ...ruPrerenderRules,
     '/ru/**': { prerender: true },
     '/**': {
       headers: {
