@@ -67,4 +67,8 @@
   &__submit {
     @apply w-full gap-2;
   }
+
+  &__submit-icon {
+    @apply shrink-0;
+  }
 }

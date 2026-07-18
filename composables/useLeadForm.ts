@@ -1,13 +1,20 @@
 import { useMediaQuery } from '@vueuse/core'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
-import { CONSENT_POLICY_VERSION, type LeadSource, type LocaleCode } from '~/shared/lead-constants'
+import { useLeadMessenger } from '~/composables/useLeadMessenger'
+import {
+  CONSENT_POLICY_VERSION,
+  type ContactMethod,
+  type LeadSource,
+} from '~/shared/lead-constants'
 import { leadFormSchema } from '~/shared/lead-schema'
+import { isMessengerContactMethod } from '~/shared/messenger-deeplink'
 
 interface LeadApiResponse {
   ok: true
   leadId: string
   receivedAt: string
+  phoneE164?: string | null
 }
 
 interface TurnstileBridge {
@@ -23,6 +30,7 @@ export function useLeadForm(
   const { locale, t } = useI18n()
   const { hiddenFields, gtmAttribution } = useLeadAttribution()
   const { pushEvent } = useGtm()
+  const { openMessenger } = useLeadMessenger()
   const config = useRuntimeConfig()
   const isMobile = useMediaQuery('(max-width: 767px)')
 
@@ -39,6 +47,7 @@ export function useLeadForm(
       from: '',
       to: '',
       details: '',
+      contactMethod: 'telegram' as ContactMethod,
       phone: '',
       consentAccepted: false,
       consentPolicyVersion: CONSENT_POLICY_VERSION,
@@ -48,11 +57,47 @@ export function useLeadForm(
   const [from, fromAttrs] = defineField('from')
   const [to, toAttrs] = defineField('to')
   const [details, detailsAttrs] = defineField('details')
+  const [contactMethod, contactMethodAttrs] = defineField('contactMethod')
   const [phone, phoneAttrs] = defineField('phone')
   const [consentAccepted, consentAttrs] = defineField('consentAccepted')
 
+  const isPhoneMethod = computed(() => contactMethod.value === 'phone')
+  const isMessengerMethod = computed(() =>
+    contactMethod.value ? isMessengerContactMethod(contactMethod.value) : false,
+  )
+
+  const submitLabel = computed(() => {
+    if (isSubmitting.value) {
+      return t('lead.submitting')
+    }
+
+    switch (contactMethod.value) {
+      case 'telegram':
+        return t('lead.submitTelegram')
+      case 'whatsapp':
+        return t('lead.submitWhatsapp')
+      case 'viber':
+        return t('lead.submitViber')
+      default:
+        return t('lead.submit')
+    }
+  })
+
+  const submitIcon = computed(() => {
+    switch (contactMethod.value) {
+      case 'telegram':
+        return 'simple-icons:telegram'
+      case 'whatsapp':
+        return 'simple-icons:whatsapp'
+      case 'viber':
+        return 'simple-icons:viber'
+      default:
+        return null
+    }
+  })
+
   const errorSummary = computed(() => {
-    const keys = ['from', 'to', 'phone', 'consentAccepted'] as const
+    const keys = ['from', 'to', 'contactMethod', ...(isPhoneMethod.value ? ['phone'] as const : []), 'consentAccepted'] as const
     return keys
       .filter(field => errors.value[field])
       .map(field => ({
@@ -60,6 +105,12 @@ export function useLeadForm(
         message: t(`lead.errors.${field}`),
         href: `#lead-${field}`,
       }))
+  })
+
+  watch(contactMethod, (method) => {
+    if (method !== 'phone') {
+      setFieldError('phone', undefined)
+    }
   })
 
   function resolveTurnstileToken(): string | null {
@@ -86,15 +137,25 @@ export function useLeadForm(
 
     isSubmitting.value = true
     submitError.value = null
-    pushEvent('lead_submit_attempt', { source, locale: locale.value, ...gtmAttribution.value })
+    pushEvent('lead_submit_attempt', {
+      source,
+      locale: locale.value,
+      contactMethod: values.contactMethod,
+      ...gtmAttribution.value,
+    })
 
-    const localeCode = locale.value as LocaleCode
+    const localeCode = locale.value
+    if (localeCode !== 'ua' && localeCode !== 'ru') {
+      return
+    }
+
     const payload = {
       idempotencyKey: idempotencyKey.value,
       from: values.from,
       to: values.to,
       details: values.details?.trim() || undefined,
-      phone: values.phone,
+      contactMethod: values.contactMethod,
+      phone: values.contactMethod === 'phone' ? values.phone : '',
       locale: localeCode,
       source,
       device: isMobile.value ? 'mobile' as const : 'desktop' as const,
@@ -110,21 +171,38 @@ export function useLeadForm(
         method: 'POST',
         body: payload,
       })
+
+      if (isMessengerContactMethod(values.contactMethod)) {
+        await openMessenger(values.contactMethod, {
+          from: values.from,
+          to: values.to,
+          details: values.details,
+        })
+      }
+
       submitSuccess.value = true
       pushEvent('lead_submit_success', {
         source,
         leadId: res.leadId,
         locale: locale.value,
+        contactMethod: values.contactMethod,
         ...gtmAttribution.value,
       })
     }
     catch (err: unknown) {
-      pushEvent('lead_submit_error', { source, locale: locale.value, ...gtmAttribution.value })
+      pushEvent('lead_submit_error', {
+        source,
+        locale: locale.value,
+        contactMethod: values.contactMethod,
+        ...gtmAttribution.value,
+      })
       if (err && typeof err === 'object' && 'statusCode' in err) {
         const statusCode = (err as { statusCode: number }).statusCode
         if (statusCode === 400) {
           pushEvent('lead_validation_error', { source, ...gtmAttribution.value })
-          setFieldError('phone', 'phone')
+          if (values.contactMethod === 'phone') {
+            setFieldError('phone', 'phone')
+          }
         }
         if (statusCode === 403) {
           turnstileRef?.value?.reset()
@@ -155,6 +233,8 @@ export function useLeadForm(
     toAttrs,
     details,
     detailsAttrs,
+    contactMethod,
+    contactMethodAttrs,
     phone,
     phoneAttrs,
     consentAccepted,
@@ -164,6 +244,10 @@ export function useLeadForm(
     isSubmitting,
     submitError,
     submitSuccess,
+    isPhoneMethod,
+    isMessengerMethod,
+    submitLabel,
+    submitIcon,
     onSubmit,
     resetIdempotency,
     idempotencyKey,

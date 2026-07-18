@@ -58,7 +58,21 @@
       :placeholder="t('lead.fields.detailsPlaceholder')"
     />
 
+    <UiSelect
+      :model-value="contactMethod ?? 'telegram'"
+      v-bind="contactMethodAttrs"
+      @update:model-value="contactMethod = $event as ContactMethod"
+      name="contactMethod"
+      select-id="lead-contact-method"
+      :label="t('lead.fields.contactMethod')"
+      :options="contactMethodOptions"
+      :hint="isMessengerMethod ? t('lead.fields.contactMethodHint') : undefined"
+      :error="errors.contactMethod ? t('lead.errors.contactMethod') : undefined"
+      required
+    />
+
     <UiInput
+      v-if="isPhoneMethod"
       :model-value="phone ?? ''"
       v-bind="phoneAttrs"
       @update:model-value="phone = $event"
@@ -120,20 +134,27 @@
         :loading="isSubmitting"
         :disabled="isSubmitting"
       >
-        {{ isSubmitting ? t('lead.submitting') : t('lead.submit') }}
+        <UiIcon
+          v-if="submitIcon && !isSubmitting"
+          :name="submitIcon"
+          size="sm"
+          class="lead-form__submit-icon"
+        />
+        {{ submitLabel }}
       </UiButton>
     </div>
   </form>
 </template>
 
 <script setup lang="ts">
-import type { LeadSource } from '~/shared/lead-constants'
+import type { ContactMethod, LeadSource } from '~/shared/lead-constants'
+import type { UiSelectOption } from '~/components/ui/UiSelect.vue'
 
 const props = defineProps<{
   source: LeadSource
 }>()
 
-const emit = defineEmits<{ success: [], 'privacy-navigate': [] }>()
+const emit = defineEmits<{ success: [contactMethod: ContactMethod], 'privacy-navigate': [] }>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -151,6 +172,8 @@ const {
   toAttrs,
   details,
   detailsAttrs,
+  contactMethod,
+  contactMethodAttrs,
   phone,
   phoneAttrs,
   consentAccepted,
@@ -160,13 +183,40 @@ const {
   isSubmitting,
   submitError,
   submitSuccess,
+  isPhoneMethod,
+  isMessengerMethod,
+  submitLabel,
+  submitIcon,
   onSubmit: baseSubmit,
   resetIdempotency,
 } = useLeadForm(props.source, turnstileRef)
 
+const contactMethodOptions = computed<UiSelectOption[]>(() => [
+  {
+    value: 'telegram',
+    label: t('lead.contactMethods.telegram'),
+    icon: 'simple-icons:telegram',
+  },
+  {
+    value: 'whatsapp',
+    label: t('lead.contactMethods.whatsapp'),
+    icon: 'simple-icons:whatsapp',
+  },
+  {
+    value: 'viber',
+    label: t('lead.contactMethods.viber'),
+    icon: 'simple-icons:viber',
+  },
+  {
+    value: 'phone',
+    label: t('lead.contactMethods.phone'),
+    icon: 'lucide:phone',
+  },
+])
+
 watch(submitSuccess, (success) => {
-  if (success) {
-    emit('success')
+  if (success && contactMethod.value) {
+    emit('success', contactMethod.value)
   }
 })
 

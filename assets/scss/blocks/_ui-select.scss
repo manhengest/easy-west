@@ -1,0 +1,38 @@
+.ui-select {
+  @apply flex flex-col gap-1;
+
+  &__label {
+    @apply text-sm font-medium text-foreground;
+  }
+
+  &__control-wrap {
+    @apply relative;
+  }
+
+  &__icon {
+    @apply pointer-events-none absolute top-1/2 left-3 z-10 flex -translate-y-1/2 items-center text-foreground;
+  }
+
+  &__control {
+    @apply w-full appearance-none rounded-[var(--radius)] border border-input bg-background py-3 pr-10 text-base text-foreground;
+
+    min-height: 3rem;
+    padding-left: 2.5rem;
+  }
+
+  &__chevron {
+    @apply pointer-events-none absolute top-1/2 right-3 flex -translate-y-1/2 items-center text-muted-foreground;
+  }
+
+  &_invalid &__control {
+    @apply border-destructive ring-1 ring-destructive;
+  }
+
+  &__error {
+    @apply text-sm text-destructive;
+  }
+
+  &__hint {
+    @apply text-sm text-muted-foreground;
+  }
+}

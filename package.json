@@ -12,7 +12,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "start": "node .output/server/index.mjs",
-    "postinstall": "nuxt prepare && pnpm fonts:sync",
+    "postinstall": "nuxt prepare && pnpm fonts:sync && pnpm assets:brand",
     "prebuild": "pnpm assets:brand && pnpm fonts:sync && pnpm validate:env",
     "fonts:sync": "node scripts/sync-fonts.mjs",
     "validate:env": "tsx scripts/validate-env.ts",

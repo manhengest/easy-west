@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     return cached.body
   }
 
-  let phoneE164: string
+  let phoneE164: string | null
   try {
     phoneE164 = parseLeadPhoneE164(payload)
   }

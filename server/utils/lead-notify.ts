@@ -1,10 +1,10 @@
-import type { LeadDevice, LeadSource } from '~/shared/lead-constants'
+import type { ContactMethod, LeadDevice, LeadSource } from '~/shared/lead-constants'
 import type { LeadSubmitPayload } from '~/shared/lead-schema'
 
 export interface LeadNotificationContext {
   leadId: string
   receivedAt: string
-  phoneE164: string
+  phoneE164: string | null
   payload: LeadSubmitPayload
 }
 
@@ -41,12 +41,30 @@ const LEAD_DEVICE_LABELS: Record<LeadDevice, string> = {
   desktop: 'Десктоп',
 }
 
-function formatLeadSource(source: LeadSource): string {
-  return LEAD_SOURCE_LABELS[source]
+const CONTACT_METHOD_LABELS: Record<ContactMethod, string> = {
+  telegram: 'Telegram',
+  whatsapp: 'WhatsApp',
+  viber: 'Viber',
+  phone: 'Телефон',
 }
 
 function formatLeadDevice(device: LeadDevice): string {
   return LEAD_DEVICE_LABELS[device]
+}
+
+function formatLeadSource(source: LeadSource): string {
+  return LEAD_SOURCE_LABELS[source]
+}
+
+function formatContactMethod(method: ContactMethod): string {
+  return CONTACT_METHOD_LABELS[method]
+}
+
+function formatPhoneValue(phoneE164: string | null): string | undefined {
+  if (phoneE164) {
+    return phoneE164
+  }
+  return undefined
 }
 
 function optionalRow(label: string, value: string | undefined): string {
@@ -71,7 +89,8 @@ function buildLeadEmailHtml(ctx: LeadNotificationContext): string {
     optionalRow('From', payload.from),
     optionalRow('To', payload.to),
     optionalRow('Details', payload.details),
-    optionalRow('Phone', phoneE164),
+    optionalRow('Contact method', formatContactMethod(payload.contactMethod)),
+    optionalRow('Phone', formatPhoneValue(phoneE164)),
     optionalRow('Locale', payload.locale.toUpperCase()),
     optionalRow('Source', formatLeadSource(payload.source)),
     optionalRow('Device', formatLeadDevice(payload.device)),
@@ -90,6 +109,10 @@ function buildLeadEmailHtml(ctx: LeadNotificationContext): string {
 
 function buildTelegramMessage(ctx: LeadNotificationContext): string {
   const { leadId, phoneE164, payload } = ctx
+  const phoneLine = phoneE164
+    ? `<b>Телефон:</b> ${telegramTelLink(phoneE164)}`
+    : `<b>Зв'язок:</b> ${escapeHtml(formatContactMethod(payload.contactMethod))}`
+
   const lines = [
     '🚚 <b>EASY WEST</b> — нова заявка',
     `--------------------------------`,
@@ -97,7 +120,7 @@ function buildTelegramMessage(ctx: LeadNotificationContext): string {
     ...(payload.details
       ? [`<b>Деталі:</b> ${escapeHtml(payload.details)}`]
       : []),
-    `<b>Телефон:</b> ${telegramTelLink(phoneE164)}`,
+    phoneLine,
     `--------------------------------`,
     `<b>Мова:</b> ${escapeHtml(payload.locale.toUpperCase())} · <b>Форма:</b> ${escapeHtml(formatLeadSource(payload.source))}`,
     `<b>Пристрій:</b> ${escapeHtml(formatLeadDevice(payload.device))}`,
