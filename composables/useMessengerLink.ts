@@ -1,4 +1,5 @@
 import type { MessengerChannel } from '~/composables/useContacts'
+import { openExternalHref } from '~/shared/open-external'
 
 const REVEAL_PROTECTED_CHANNELS = new Set<MessengerChannel>(['whatsapp', 'telegram', 'viber'])
 
@@ -29,7 +30,7 @@ export function useMessengerActions() {
 
   function openMessenger(channel: MessengerChannel) {
     trackClick(channel)
-    window.open(hrefFor(channel), '_blank', 'noopener,noreferrer')
+    openExternalHref(hrefFor(channel))
   }
 
   return {

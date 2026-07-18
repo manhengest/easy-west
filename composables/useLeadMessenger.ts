@@ -5,6 +5,7 @@ import {
   isMessengerContactMethod,
   type LeadMessageFields,
 } from '~/shared/messenger-deeplink'
+import { openExternalHref } from '~/shared/open-external'
 
 export function useLeadMessenger() {
   const { t } = useI18n()
@@ -53,7 +54,7 @@ export function useLeadMessenger() {
     }
 
     trackClick(method)
-    window.open(href, '_blank', 'noopener,noreferrer')
+    openExternalHref(href)
   }
 
   return {
