@@ -66,6 +66,30 @@
 
   &__submit {
     @apply w-full gap-2;
+
+    &.lead-form__submit_telegram.ui-button {
+      @apply bg-[#229ED9] text-white;
+
+      &:hover:not(:disabled) {
+        @apply bg-[#1a8bc4];
+      }
+    }
+
+    &.lead-form__submit_whatsapp.ui-button {
+      @apply bg-[#25D366] text-white;
+
+      &:hover:not(:disabled) {
+        @apply bg-[#1da851];
+      }
+    }
+
+    &.lead-form__submit_viber.ui-button {
+      @apply bg-[#7360F2] text-white;
+
+      &:hover:not(:disabled) {
+        @apply bg-[#5f4fd4];
+      }
+    }
   }
 
   &__submit-icon {

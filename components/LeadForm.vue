@@ -131,6 +131,7 @@
         type="submit"
         variant="primary"
         class="lead-form__submit"
+        :class="submitButtonClass"
         :loading="isSubmitting"
         :disabled="isSubmitting"
       >
@@ -190,6 +191,14 @@ const {
   onSubmit: baseSubmit,
   resetIdempotency,
 } = useLeadForm(props.source, turnstileRef)
+
+const submitButtonClass = computed(() => {
+  const method = contactMethod.value
+  if (method && method !== 'phone') {
+    return `lead-form__submit_${method}`
+  }
+  return undefined
+})
 
 const contactMethodOptions = computed<UiSelectOption[]>(() => [
   {

@@ -74,11 +74,21 @@ function optionalRow(label: string, value: string | undefined): string {
   return `<tr><td><strong>${escapeHtml(label)}</strong></td><td>${escapeHtml(value)}</td></tr>`
 }
 
-function optionalTelegramLine(label: string, value: string | undefined): string | null {
+function optionalUtmLine(key: string, value: string | undefined): string | null {
   if (!value) {
     return null
   }
-  return `<b>${escapeHtml(label)}:</b> ${escapeHtml(value)}`
+  return `${escapeHtml(key)}=${escapeHtml(value)}`
+}
+
+function buildTelegramUtmLines(payload: LeadSubmitPayload): string[] {
+  return [
+    optionalUtmLine('utm_source', payload.utmSource),
+    optionalUtmLine('utm_medium', payload.utmMedium),
+    optionalUtmLine('utm_campaign', payload.utmCampaign),
+    optionalUtmLine('utm_content', payload.utmContent),
+    optionalUtmLine('utm_term', payload.utmTerm),
+  ].filter((line): line is string => line !== null)
 }
 
 function buildLeadEmailHtml(ctx: LeadNotificationContext): string {
@@ -112,6 +122,7 @@ function buildTelegramMessage(ctx: LeadNotificationContext): string {
   const phoneLine = phoneE164
     ? `<b>Телефон:</b> ${telegramTelLink(phoneE164)}`
     : `<b>Зв'язок:</b> ${escapeHtml(formatContactMethod(payload.contactMethod))}`
+  const utmLines = buildTelegramUtmLines(payload)
 
   const lines = [
     '🚚 <b>EASY WEST</b> — нова заявка',
@@ -124,16 +135,8 @@ function buildTelegramMessage(ctx: LeadNotificationContext): string {
     `--------------------------------`,
     `<b>Мова:</b> ${escapeHtml(payload.locale.toUpperCase())} · <b>Форма:</b> ${escapeHtml(formatLeadSource(payload.source))}`,
     `<b>Пристрій:</b> ${escapeHtml(formatLeadDevice(payload.device))}`,
-    ...[
-      optionalTelegramLine('UTM source', payload.utmSource),
-      optionalTelegramLine('UTM medium', payload.utmMedium),
-      optionalTelegramLine('UTM campaign', payload.utmCampaign),
-      optionalTelegramLine('UTM content', payload.utmContent),
-      optionalTelegramLine('UTM term', payload.utmTerm),
-      optionalTelegramLine('Referrer', payload.referrer),
-      optionalTelegramLine('Landing', payload.landingPath),
-    ].filter((line): line is string => line !== null),
     `<b>ID:</b> ${escapeHtml(leadId)}`,
+    ...(utmLines.length > 0 ? ['', ...utmLines] : []),
   ]
   return lines.join('\n')
 }
