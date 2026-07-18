@@ -17,3 +17,12 @@ export type LeadDevice = (typeof LEAD_DEVICES)[number]
 
 export const LOCALE_CODES = ['ua', 'ru'] as const
 export type LocaleCode = (typeof LOCALE_CODES)[number]
+
+export const CONTACT_METHODS = [
+  'telegram',
+  'whatsapp',
+  'viber',
+  'phone',
+] as const
+
+export type ContactMethod = (typeof CONTACT_METHODS)[number]

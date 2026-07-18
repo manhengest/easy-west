@@ -12,4 +12,8 @@
   &__message {
     @apply max-w-xs text-base font-medium leading-snug text-foreground;
   }
+
+  &__hint {
+    @apply max-w-sm text-sm text-muted-foreground;
+  }
 }

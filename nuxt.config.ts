@@ -21,6 +21,12 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
+  // Avoid Vite pre-transform race on `#app-manifest` (nuxt/nuxt#33606).
+  // Client route-rule matching is unused; headers/prerender are server/build-time.
+  experimental: {
+    appManifest: false,
+  },
+
   modules: [
     '@nuxt/eslint',
     '@nuxt/fonts',

@@ -26,3 +26,8 @@ logs
 
 # Generated fonts (rebuilt via pnpm fonts:sync)
 public/fonts/
+
+# Generated brand assets (rebuilt via pnpm assets:brand)
+public/og/
+
+.cursor/

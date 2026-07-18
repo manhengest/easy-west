@@ -6,9 +6,19 @@
     <p class="lead-thank-you__message">
       {{ t('lead.success') }}
     </p>
+    <p v-if="showViberHint" class="lead-thank-you__hint">
+      {{ t('lead.viberCopyHint') }}
+    </p>
   </div>
 </template>
 
 <script setup lang="ts">
+withDefaults(
+  defineProps<{
+    showViberHint?: boolean
+  }>(),
+  { showViberHint: false },
+)
+
 const { t } = useI18n()
 </script>
