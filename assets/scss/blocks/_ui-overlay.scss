@@ -9,7 +9,7 @@
   }
 
   &__panel {
-    @apply relative z-10 max-h-[90dvh] w-full overflow-y-auto bg-background shadow-lg;
+    @apply relative z-10 flex max-h-[90dvh] w-full flex-col overflow-hidden bg-background shadow-lg;
   }
 }
 

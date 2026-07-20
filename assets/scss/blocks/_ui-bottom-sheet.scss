@@ -1,12 +1,8 @@
 .ui-bottom-sheet {
   @apply rounded-t-[var(--radius)] md:max-w-lg;
 
-  &__handle {
-    @apply mx-auto mt-2 h-1 w-10 rounded-full bg-border;
-  }
-
   &__header {
-    @apply flex items-center justify-between border-b border-border px-4 py-3;
+    @apply flex shrink-0 items-center justify-between border-b border-border px-4 py-3;
   }
 
   &__title {
@@ -18,7 +14,7 @@
   }
 
   &__body {
-    @apply px-4 pt-4 pb-7;
+    @apply min-h-0 overflow-y-auto px-4 pt-4 pb-7;
 
     .lead-form {
       @apply gap-3;
@@ -37,7 +33,7 @@
     }
 
     .ui-textarea__control {
-      @apply h-[76px] p-2.5 text-base;
+      @apply h-[94px] p-2.5 text-base;
     }
 
     .ui-input__hint {

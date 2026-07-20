@@ -6,7 +6,6 @@
     panel-class="ui-bottom-sheet"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <div class="ui-bottom-sheet__handle" aria-hidden="true" />
     <header class="ui-bottom-sheet__header">
       <h2 :id="titleId" class="ui-bottom-sheet__title">
         {{ title }}
