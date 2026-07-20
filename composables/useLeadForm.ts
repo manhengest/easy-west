@@ -9,6 +9,7 @@ import {
 } from '~/shared/lead-constants'
 import { leadFormSchema } from '~/shared/lead-schema'
 import { isMessengerContactMethod } from '~/shared/messenger-deeplink'
+import { closeExternalTab, openBlankExternalTab } from '~/shared/open-external'
 
 interface LeadApiResponse {
   ok: true
@@ -166,6 +167,16 @@ export function useLeadForm(
       website: '',
     }
 
+    // HTTPS messenger tabs must open in the same user-gesture turn as the click.
+    // After await $fetch, Chrome blocks window.open as a popup.
+    let messengerTab: Window | null = null
+    if (
+      isMessengerContactMethod(values.contactMethod)
+      && values.contactMethod !== 'viber'
+    ) {
+      messengerTab = openBlankExternalTab()
+    }
+
     try {
       const res = await $fetch<LeadApiResponse>('/api/leads', {
         method: 'POST',
@@ -173,11 +184,16 @@ export function useLeadForm(
       })
 
       if (isMessengerContactMethod(values.contactMethod)) {
-        await openMessenger(values.contactMethod, {
-          from: values.from,
-          to: values.to,
-          details: values.details,
-        })
+        await openMessenger(
+          values.contactMethod,
+          {
+            from: values.from,
+            to: values.to,
+            details: values.details,
+          },
+          { tab: messengerTab },
+        )
+        messengerTab = null
       }
 
       submitSuccess.value = true
@@ -190,6 +206,8 @@ export function useLeadForm(
       })
     }
     catch (err: unknown) {
+      closeExternalTab(messengerTab)
+      messengerTab = null
       pushEvent('lead_submit_error', {
         source,
         locale: locale.value,

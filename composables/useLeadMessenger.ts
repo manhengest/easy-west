@@ -31,7 +31,11 @@ export function useLeadMessenger() {
     })
   }
 
-  async function openMessenger(method: ContactMethod, fields: LeadMessageFields): Promise<void> {
+  async function openMessenger(
+    method: ContactMethod,
+    fields: LeadMessageFields,
+    options?: { tab?: Window | null },
+  ): Promise<void> {
     if (!isMessengerContactMethod(method)) {
       return
     }
@@ -54,7 +58,7 @@ export function useLeadMessenger() {
     }
 
     trackClick(method)
-    openExternalHref(href)
+    openExternalHref(href, options?.tab)
   }
 
   return {

@@ -26,13 +26,14 @@
     }
 
     .ui-input__control {
-      @apply px-2.5 py-2 text-sm;
+      // text-base (16px) avoids iOS Safari focus zoom
+      @apply px-2.5 py-2 text-base;
 
       min-height: 2.5rem;
     }
 
     .ui-textarea__control {
-      @apply h-[76px] p-2.5 text-sm;
+      @apply h-[76px] p-2.5 text-base;
     }
 
     .ui-input__hint {
