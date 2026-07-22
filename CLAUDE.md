@@ -50,6 +50,10 @@ NODE_ENV=production pnpm start
 | `pnpm lint` / `pnpm lint:eslint` | Stylelint SCSS / ESLint |
 | `pnpm validate:env` | Zod env check |
 | `pnpm assets:brand` | Sync favicons from `assets/images/favicon/`, OG from `assets/images/logo/` |
+| `pnpm test` | Vitest unit + Nuxt tests |
+| `pnpm test:watch` | Vitest watch mode |
+| `pnpm test:coverage` | Vitest with V8 coverage thresholds |
+| `pnpm test:e2e` | Playwright smoke tests (local) |
 
 ## Project layout
 

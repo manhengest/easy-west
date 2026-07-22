@@ -23,6 +23,7 @@ logs
 .env
 .env.*
 !.env.example
+!.env.e2e.example
 
 # Generated fonts (rebuilt via pnpm fonts:sync)
 public/fonts/
@@ -31,3 +32,9 @@ public/fonts/
 public/og/
 
 .cursor/
+
+# Test outputs
+coverage/
+test-results/
+playwright-report/
+blob-report/
