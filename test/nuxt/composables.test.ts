@@ -132,4 +132,19 @@ describe('useLeadMessenger', () => {
     expect(href).toContain('wa.me')
     expect(href).toContain('text=')
   })
+
+  it('returns Viber handoff promise without showing toast', async () => {
+    vi.stubGlobal('navigator', {
+      clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+    })
+
+    const { openMessenger } = await mountComposable(() => useLeadMessenger())
+    const handoff = openMessenger('viber', { from: 'A', to: 'B' })
+
+    expect(handoff).toBeInstanceOf(Promise)
+    const { toast } = useToast()
+    expect(toast.value).toBeNull()
+
+    vi.unstubAllGlobals()
+  })
 })

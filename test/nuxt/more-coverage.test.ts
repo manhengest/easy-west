@@ -7,12 +7,50 @@ import UiMessengerLink from '~/components/ui/UiMessengerLink.vue'
 import UiTurnstile from '~/components/ui/UiTurnstile.vue'
 
 describe('conversion components (extended)', () => {
-  it('renders LeadThankYou with optional Viber hint', async () => {
+  it('renders LeadThankYou with messenger success text for Telegram', async () => {
     const wrapper = await mountSuspended(LeadThankYou, {
-      props: { showViberHint: true },
+      props: { contactMethod: 'telegram' },
+    })
+    expect(wrapper.find('.lead-thank-you__message').text()).toContain('повідомлення')
+  })
+
+  it('renders LeadThankYou with phone success text', async () => {
+    const wrapper = await mountSuspended(LeadThankYou, {
+      props: { contactMethod: 'phone' },
+    })
+    expect(wrapper.find('.lead-thank-you__message').text()).toContain('найближчим часом')
+  })
+
+  it('renders LeadThankYou with Viber copy hint when handoff ok', async () => {
+    const wrapper = await mountSuspended(LeadThankYou, {
+      props: { contactMethod: 'viber', viberHandoff: 'ok' },
     })
     expect(wrapper.find('.lead-thank-you').exists()).toBe(true)
+    expect(wrapper.find('.lead-thank-you__message').text()).toContain('повідомлення')
     expect(wrapper.find('.lead-thank-you__hint').exists()).toBe(true)
+  })
+
+  it('renders LeadThankYou checking spinner while probing Viber', async () => {
+    const wrapper = await mountSuspended(LeadThankYou, {
+      props: { contactMethod: 'viber', viberHandoff: 'checking' },
+    })
+    expect(wrapper.find('.lead-thank-you__checking').exists()).toBe(true)
+    expect(wrapper.find('.lead-thank-you__spinner').exists()).toBe(true)
+    expect(wrapper.find('.lead-thank-you__icon-wrap').exists()).toBe(false)
+    expect(wrapper.find('.lead-thank-you__message').exists()).toBe(false)
+    expect(wrapper.find('.lead-thank-you__fallback').exists()).toBe(false)
+  })
+
+  it('renders LeadThankYou fallback actions when Viber handoff misses', async () => {
+    const wrapper = await mountSuspended(LeadThankYou, {
+      props: { contactMethod: 'viber', viberHandoff: 'miss' },
+    })
+    expect(wrapper.find('.lead-thank-you__icon-wrap_error').exists()).toBe(true)
+    expect(wrapper.find('.lead-thank-you__icon_error').exists()).toBe(true)
+    expect(wrapper.find('.lead-thank-you__message').exists()).toBe(false)
+    expect(wrapper.find('.lead-thank-you__fallback-message').exists()).toBe(true)
+    expect(wrapper.findAll('.lead-thank-you__fallback-link')).toHaveLength(2)
+    expect(wrapper.find('.lead-thank-you__fallback-link_primary').exists()).toBe(true)
   })
 
   it('renders LeadFormHost shell when open', async () => {

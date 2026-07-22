@@ -74,6 +74,7 @@ describe('POST /api/leads handler', () => {
     const res = await callHandler(body)
     expect(res).toMatchObject({ ok: true, locale: 'ua', source: 'hero' })
     expect(verifyTurnstileToken).not.toHaveBeenCalled()
+    expect(notifyLeadChannels).not.toHaveBeenCalled()
   })
 
   it('returns 403 when Turnstile verification fails', async () => {
@@ -87,11 +88,13 @@ describe('POST /api/leads handler', () => {
   it('returns 502 when all notify channels fail', async () => {
     notifyLeadChannels.mockResolvedValue({ email: false, telegram: false })
 
-    await expect(callHandler(validLeadSubmitBody())).rejects.toMatchObject({ statusCode: 502 })
+    await expect(callHandler(validLeadSubmitBody({ turnstileToken: 'real-token' }))).rejects.toMatchObject({
+      statusCode: 502,
+    })
   })
 
   it('returns happy path response', async () => {
-    const body = validLeadSubmitBody()
+    const body = validLeadSubmitBody({ turnstileToken: 'real-token' })
     const res = await callHandler(body) as { ok: true, leadId: string }
 
     expect(res.ok).toBe(true)
@@ -100,7 +103,7 @@ describe('POST /api/leads handler', () => {
   })
 
   it('replays idempotent requests', async () => {
-    const body = validLeadSubmitBody()
+    const body = validLeadSubmitBody({ turnstileToken: 'real-token' })
     const first = await callHandler(body)
     const second = await callHandler(body)
 
@@ -122,7 +125,7 @@ describe('POST /api/leads handler', () => {
 
   it('succeeds when only one notify channel works', async () => {
     notifyLeadChannels.mockResolvedValue({ email: true, telegram: false })
-    const res = await callHandler(validLeadSubmitBody())
+    const res = await callHandler(validLeadSubmitBody({ turnstileToken: 'real-token' }))
     expect(res).toMatchObject({ ok: true })
   })
 })

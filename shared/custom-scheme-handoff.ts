@@ -1,5 +1,7 @@
 export type CustomSchemeHandoffResult = 'handed_off' | 'stayed'
 
+export type ViberHandoffStatus = 'checking' | 'ok' | 'miss'
+
 /**
  * After opening a custom-scheme URL (viber://, tel:, …), wait briefly to see
  * whether the page loses focus or goes hidden — a signal the OS handed off to

@@ -149,13 +149,17 @@
 
 <script setup lang="ts">
 import type { ContactMethod, LeadSource } from '~/shared/lead-constants'
+import type { CustomSchemeHandoffResult } from '~/shared/custom-scheme-handoff'
 import type { UiSelectOption } from '~/components/ui/UiSelect.vue'
 
 const props = defineProps<{
   source: LeadSource
 }>()
 
-const emit = defineEmits<{ success: [contactMethod: ContactMethod], 'privacy-navigate': [] }>()
+const emit = defineEmits<{
+  success: [contactMethod: ContactMethod, viberHandoff?: Promise<CustomSchemeHandoffResult>]
+  'privacy-navigate': []
+}>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -184,6 +188,7 @@ const {
   isSubmitting,
   submitError,
   submitSuccess,
+  viberHandoff,
   isPhoneMethod,
   isMessengerMethod,
   submitLabel,
@@ -225,7 +230,10 @@ const contactMethodOptions = computed<UiSelectOption[]>(() => [
 
 watch(submitSuccess, (success) => {
   if (success && contactMethod.value) {
-    emit('success', contactMethod.value)
+    const handoff = contactMethod.value === 'viber'
+      ? viberHandoff.value ?? undefined
+      : undefined
+    emit('success', contactMethod.value, handoff)
   }
 })
 

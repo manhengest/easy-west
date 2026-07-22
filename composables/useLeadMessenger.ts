@@ -1,4 +1,5 @@
 import type { ContactMethod } from '~/shared/lead-constants'
+import type { CustomSchemeHandoffResult } from '~/shared/custom-scheme-handoff'
 import {
   buildLeadMessage,
   buildMessengerDeeplink,
@@ -12,7 +13,6 @@ export function useLeadMessenger() {
   const { t } = useI18n()
   const { links } = useContacts()
   const { trackClick } = useMessengerActions()
-  const { showViberFallbackToast } = useViberFallbackToast()
 
   function buildMessage(fields: LeadMessageFields): string {
     return buildLeadMessage(fields, {
@@ -33,13 +33,13 @@ export function useLeadMessenger() {
     })
   }
 
-  async function openMessenger(
+  function openMessenger(
     method: ContactMethod,
     fields: LeadMessageFields,
     options?: { tab?: Window | null },
-  ): Promise<void> {
+  ): Promise<CustomSchemeHandoffResult> | undefined {
     if (!isMessengerContactMethod(method)) {
-      return
+      return undefined
     }
 
     const message = buildMessage(fields)
@@ -51,24 +51,19 @@ export function useLeadMessenger() {
     })
 
     if (method === 'viber') {
-      try {
-        await navigator.clipboard.writeText(message)
-      }
-      catch {
+      void navigator.clipboard.writeText(message).catch(() => {
         // Clipboard may be unavailable; user can still paste manually.
-      }
+      })
     }
 
     trackClick(method)
     openExternalHref(href, options?.tab)
 
     if (method === 'viber') {
-      void watchCustomSchemeHandoff().then((result) => {
-        if (result === 'stayed') {
-          showViberFallbackToast()
-        }
-      })
+      return watchCustomSchemeHandoff()
     }
+
+    return undefined
   }
 
   return {

@@ -3,10 +3,18 @@
 
   &__icon-wrap {
     @apply flex size-16 items-center justify-center rounded-full bg-green-50;
+
+    &_error {
+      @apply bg-red-50;
+    }
   }
 
   &__icon {
     @apply size-10 text-green-600;
+
+    &_error {
+      @apply text-red-600;
+    }
   }
 
   &__message {
@@ -15,5 +23,33 @@
 
   &__hint {
     @apply max-w-sm text-sm text-muted-foreground;
+  }
+
+  &__checking {
+    @apply flex min-h-24 items-center justify-center py-8;
+  }
+
+  &__spinner {
+    @apply inline-block size-6 shrink-0 animate-spin rounded-full border-2 border-primary border-t-transparent;
+  }
+
+  &__fallback {
+    @apply flex max-w-sm flex-col items-center gap-4;
+  }
+
+  &__fallback-message {
+    @apply max-w-xs text-base font-bold leading-snug text-black;
+  }
+
+  &__fallback-actions {
+    @apply flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-center;
+  }
+
+  &__fallback-link {
+    @apply rounded-[var(--radius)] border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary;
+
+    &_primary {
+      @apply border-transparent bg-black text-white hover:bg-neutral-800;
+    }
   }
 }

@@ -57,7 +57,7 @@ async function waitForTurnstile(timeoutMs = 10_000): Promise<NonNullable<Window[
 export function useTurnstile(containerRef: Ref<HTMLElement | null>) {
   const config = useRuntimeConfig()
   const siteKey = computed(() => String(config.public.turnstileSiteKey || ''))
-  const enabled = computed(() => Boolean(siteKey.value))
+  const enabled = computed(() => Boolean(siteKey.value) && !import.meta.dev)
   const token = ref('')
   const widgetId = ref<string | null>(null)
   const loadError = ref(false)

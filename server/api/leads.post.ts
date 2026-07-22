@@ -63,24 +63,29 @@ export default defineEventHandler(async (event) => {
   const receivedAt = new Date().toISOString()
   const leadId = crypto.randomUUID().replace(/-/g, '').slice(0, 10)
 
-  const notifyResult = await notifyLeadChannels(
-    {
-      resendApiKey: config.resendApiKey,
-      leadsFromEmail: config.leadsFromEmail,
-      leadsToEmail: config.leadsToEmail,
-      telegramBotToken: config.telegramBotToken,
-      telegramChatId: config.telegramChatId,
-    },
-    { leadId, receivedAt, phoneE164, payload },
-  )
+  if (!stubToken || isProduction) {
+    const notifyResult = await notifyLeadChannels(
+      {
+        resendApiKey: config.resendApiKey,
+        leadsFromEmail: config.leadsFromEmail,
+        leadsToEmail: config.leadsToEmail,
+        telegramBotToken: config.telegramBotToken,
+        telegramChatId: config.telegramChatId,
+      },
+      { leadId, receivedAt, phoneE164, payload },
+    )
 
-  if (!notifyResult.email && !notifyResult.telegram) {
-    console.error('[leads] All notification channels failed', { leadId, idemKey })
-    throw createError({ statusCode: 502, statusMessage: 'Lead notification failed' })
+    if (!notifyResult.email && !notifyResult.telegram) {
+      console.error('[leads] All notification channels failed', { leadId, idemKey })
+      throw createError({ statusCode: 502, statusMessage: 'Lead notification failed' })
+    }
+
+    if (!notifyResult.email || !notifyResult.telegram) {
+      console.error('[leads] Partial notification failure', { leadId, ...notifyResult })
+    }
   }
-
-  if (!notifyResult.email || !notifyResult.telegram) {
-    console.error('[leads] Partial notification failure', { leadId, ...notifyResult })
+  else {
+    console.info('[leads] Stub token: skipping notifications (non-production)', { leadId, idemKey })
   }
 
   const response = {

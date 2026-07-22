@@ -8,6 +8,7 @@ import {
   type LeadSource,
 } from '~/shared/lead-constants'
 import { leadFormSchema } from '~/shared/lead-schema'
+import type { CustomSchemeHandoffResult } from '~/shared/custom-scheme-handoff'
 import { isMessengerContactMethod } from '~/shared/messenger-deeplink'
 import { closeExternalTab, openBlankExternalTab } from '~/shared/open-external'
 
@@ -39,6 +40,7 @@ export function useLeadForm(
   const isSubmitting = ref(false)
   const submitError = ref<string | null>(null)
   const submitSuccess = ref(false)
+  const viberHandoff = ref<Promise<CustomSchemeHandoffResult> | null>(null)
 
   const validationSchema = toTypedSchema(leadFormSchema)
 
@@ -115,6 +117,10 @@ export function useLeadForm(
   })
 
   function resolveTurnstileToken(): string | null {
+    if (import.meta.dev) {
+      return 'stub-turnstile-dev'
+    }
+
     const turnstile = turnstileRef?.value
     if (turnstile?.enabled) {
       return turnstile.token || null
@@ -184,7 +190,7 @@ export function useLeadForm(
       })
 
       if (isMessengerContactMethod(values.contactMethod)) {
-        await openMessenger(
+        const handoff = openMessenger(
           values.contactMethod,
           {
             from: values.from,
@@ -193,6 +199,7 @@ export function useLeadForm(
           },
           { tab: messengerTab },
         )
+        viberHandoff.value = handoff ?? null
         messengerTab = null
       }
 
@@ -239,6 +246,7 @@ export function useLeadForm(
   function resetIdempotency() {
     idempotencyKey.value = crypto.randomUUID()
     submitSuccess.value = false
+    viberHandoff.value = null
     submitError.value = null
     resetForm()
     turnstileRef?.value?.reset()
@@ -262,6 +270,7 @@ export function useLeadForm(
     isSubmitting,
     submitError,
     submitSuccess,
+    viberHandoff,
     isPhoneMethod,
     isMessengerMethod,
     submitLabel,
