@@ -34,7 +34,7 @@
   }
 
   &__fallback {
-    @apply flex max-w-sm flex-col items-center gap-4;
+    @apply flex w-full max-w-sm flex-col items-center gap-4;
   }
 
   &__fallback-message {
@@ -42,11 +42,11 @@
   }
 
   &__fallback-actions {
-    @apply flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-center;
+    @apply flex w-full flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-center;
   }
 
   &__fallback-link {
-    @apply rounded-[var(--radius)] border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary;
+    @apply w-full rounded-[var(--radius)] border border-border px-4 py-2 text-center text-sm font-medium text-foreground transition-colors hover:bg-secondary sm:w-auto;
 
     &_primary {
       @apply border-transparent bg-black text-white hover:bg-neutral-800;

@@ -50,9 +50,15 @@ const lastContactMethod = ref<ContactMethod | null>(null)
 const viberHandoffStatus = ref<ViberHandoffStatus | undefined>(undefined)
 const formRef = ref<{ resetIdempotency: () => void } | null>(null)
 
-const overlayTitle = computed(() =>
-  showThankYou.value ? t('lead.thankYou.title') : t('lead.title'),
-)
+const overlayTitle = computed(() => {
+  if (!showThankYou.value) {
+    return t('lead.title')
+  }
+  if (viberHandoffStatus.value === 'miss') {
+    return t('lead.thankYou.errorTitle')
+  }
+  return t('lead.thankYou.title')
+})
 
 async function onFormSuccess(
   contactMethod: ContactMethod,
