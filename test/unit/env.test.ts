@@ -1,5 +1,4 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { getServerEnv } from '~/server/utils/env'
 import { validServerEnv } from '../fixtures/env'
 
 describe('getServerEnv', () => {

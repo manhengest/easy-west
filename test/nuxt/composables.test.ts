@@ -24,11 +24,11 @@ function mockMessengerTab() {
 describe('useLeadAttribution', () => {
   it('exposes hidden fields from cookie', async () => {
     const cookie = useCookie('ew_attribution')
-    cookie.value = {
+    cookie.value = JSON.stringify({
       utmSource: 'google',
       utmMedium: 'cpc',
       landingPath: '/',
-    }
+    })
 
     const { hiddenFields, gtmAttribution } = await mountComposable(() => useLeadAttribution())
 

@@ -20,7 +20,7 @@ describe('useLeadAttribution (branches)', () => {
   })
 
   it('skips capture when no incoming UTM and cookie exists', async () => {
-    useCookie('ew_attribution').value = { utmSource: 'existing' }
+    useCookie('ew_attribution').value = JSON.stringify({ utmSource: 'existing' })
     await navigateTo('/')
 
     const { captureFromQuery, attribution } = await mountComposable(() => useLeadAttribution())

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { mountComposable } from '../helpers/mountComposable'
 import LeadFormHost from '~/components/LeadFormHost.vue'
@@ -67,7 +67,7 @@ describe('gtm plugin', () => {
     const original = config.public.gtmId
     config.public.gtmId = 'GTM-TESTID'
 
-    const w = window as Window & { dataLayer?: unknown[] }
+    const w = window as unknown as { dataLayer: unknown[] }
     w.dataLayer = []
     w.dataLayer.push([
       'consent',

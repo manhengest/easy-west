@@ -57,12 +57,13 @@ test.describe('lead form', () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       window.turnstile = {
-        render: (_el: HTMLElement, opts: { callback: (token: string) => void }) => {
-          opts.callback('stub-e2e-turnstile')
+        render: (_el, opts) => {
+          opts.callback?.('stub-e2e-turnstile')
           return 'widget-id'
         },
         reset: () => {},
         remove: () => {},
+        getResponse: () => 'stub-e2e-turnstile',
       }
     })
   })
@@ -78,7 +79,7 @@ test.describe('lead form', () => {
 
   test('shows validation errors on empty submit', async ({ page }) => {
     const form = await openLeadForm(page)
-    await form.getByRole('button', { type: 'submit' }).click()
+    await form.locator('button[type="submit"]').click()
     await expect(page.locator('.lead-form__summary, .lead-form__error, [aria-invalid="true"]').first()).toBeVisible()
   })
 
@@ -102,7 +103,7 @@ test.describe('lead form', () => {
     await form.locator('#lead-from').fill('Kyiv')
     await form.locator('#lead-to').fill('Warsaw')
     await form.locator('#lead-consent').check()
-    await form.getByRole('button', { type: 'submit' }).click()
+    await form.locator('button[type="submit"]').click()
 
     await expect(page.locator('.lead-thank-you')).toBeVisible({ timeout: 10_000 })
   })

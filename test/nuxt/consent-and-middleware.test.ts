@@ -48,8 +48,7 @@ describe('useConsent', () => {
 
 describe('useGtm', () => {
   beforeEach(() => {
-    const w = window as Window & { dataLayer?: unknown[] }
-    w.dataLayer = []
+    ;(window as unknown as { dataLayer: unknown[] }).dataLayer = []
   })
 
   it('pushes events to dataLayer', async () => {
