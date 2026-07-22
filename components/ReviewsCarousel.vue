@@ -12,7 +12,7 @@
             loading="lazy"
             decoding="async"
             class="reviews-carousel__img"
-          />
+          >
         </li>
       </ul>
     </template>

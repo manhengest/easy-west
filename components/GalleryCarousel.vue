@@ -12,7 +12,7 @@
             loading="lazy"
             decoding="async"
             class="gallery-carousel__img"
-          />
+          >
         </li>
       </ul>
     </template>

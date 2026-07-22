@@ -1,5 +1,5 @@
 <template>
-  <section id="reviews" class="reviews-section" v-motion="scrollVisible()">
+  <section id="reviews" v-motion="scrollVisible()" class="reviews-section">
     <header class="reviews-section__header">
       <h2 class="reviews-section__title">
         {{ t('reviews.title') }}

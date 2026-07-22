@@ -1,5 +1,5 @@
 <template>
-  <section id="geography" class="geography" v-motion="scrollVisible()">
+  <section id="geography" v-motion="scrollVisible()" class="geography">
     <header class="geography__header">
       <h2 class="geography__title">
         {{ t('geography.title') }}
@@ -13,8 +13,8 @@
       <li
         v-for="(item, index) in geographyHighlights"
         :key="item.text"
-        class="geography-highlight"
         v-motion="scrollVisible(index * 60)"
+        class="geography-highlight"
       >
         <UiIcon :name="item.icon" size="md" class="geography-highlight__icon" />
         <span>{{ item.text }}</span>
@@ -26,9 +26,9 @@
         <article
           v-for="(route, index) in routeHighlights"
           :key="route.id"
+          v-motion="scrollVisible(index * 80 + 100)"
           class="geography-route"
           :class="`geography-route_${route.id}`"
-          v-motion="scrollVisible(index * 80 + 100)"
         >
           <span class="geography-route__icon" aria-hidden="true">
             <UiIcon :name="route.icon" size="md" />
@@ -44,7 +44,7 @@
         </article>
       </div>
 
-      <figure class="geography__map" v-motion="scrollVisible(180)">
+      <figure v-motion="scrollVisible(180)" class="geography__map">
         <img
           :src="GEOGRAPHY_MAP.src"
           :alt="t('geography.mapAlt')"
@@ -53,7 +53,7 @@
           loading="lazy"
           decoding="async"
           class="geography__map-img"
-        />
+        >
       </figure>
     </div>
   </section>

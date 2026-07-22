@@ -2,14 +2,14 @@
   <section id="hero" ref="section" class="hero">
     <div class="hero__grid">
       <div class="hero__copy">
-        <h1 class="hero__title" v-motion="fadeUp(0)">
+        <h1 v-motion="fadeUp(0)" class="hero__title">
           {{ t('hero.title') }}
           <span class="hero__title-accent">{{ t('hero.titleAccent') }}</span>
         </h1>
-        <p class="hero__lead" v-motion="fadeUp(80)">
+        <p v-motion="fadeUp(80)" class="hero__lead">
           {{ t('hero.lead') }}
         </p>
-        <div class="hero__messengers-block" v-motion="fadeUp(160)">
+        <div v-motion="fadeUp(160)" class="hero__messengers-block">
           <p class="hero__messengers-label">
             {{ t('hero.messengerLead') }}
           </p>
@@ -19,7 +19,7 @@
             <UiMessengerLink channel="viber" />
           </div>
         </div>
-        <div class="hero__cta" v-motion="fadeUp(240)">
+        <div v-motion="fadeUp(240)" class="hero__cta">
           <UiButton
             type="button"
             variant="primary"
@@ -31,8 +31,8 @@
           </UiButton>
         </div>
         <div
-          class="hero__social"
           v-motion="fadeUp(320)"
+          class="hero__social"
           :aria-label="t('hero.socialProofAria')"
         >
           <div class="hero__stars" aria-hidden="true">

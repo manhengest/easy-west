@@ -1,5 +1,5 @@
 <template>
-  <section id="process" class="process" v-motion="scrollVisible()">
+  <section id="process" v-motion="scrollVisible()" class="process">
     <header class="process__header">
       <h2 class="process__title">
         {{ t('timeline.title') }}
@@ -13,8 +13,8 @@
       <li
         v-for="(phase, index) in processPhases"
         :key="phase.id"
-        class="process__overview-item"
         v-motion="scrollVisible(index * 60)"
+        class="process__overview-item"
       >
         <span class="process__overview-marker">{{ index + 1 }}</span>
         <span class="process__overview-label">{{ phase.title }}</span>
@@ -42,8 +42,8 @@
       <article
         v-for="(phase, phaseIndex) in processPhases"
         :key="phase.id"
-        class="process-phase"
         v-motion="scrollVisible(phaseIndex * 80 + 120)"
+        class="process-phase"
       >
         <header class="process-phase__header">
           <span class="process-phase__badge" aria-hidden="true">

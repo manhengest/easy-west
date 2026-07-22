@@ -16,7 +16,7 @@ const props = withDefaults(
     label?: string
     size?: 'sm' | 'md' | 'lg'
   }>(),
-  { size: 'md' },
+  { size: 'md', label: undefined },
 )
 
 const sizeClass = computed(() => `ui-icon_${props.size}`)

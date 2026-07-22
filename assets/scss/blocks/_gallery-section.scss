@@ -25,17 +25,20 @@
 
   &__viewport {
     @apply overflow-hidden;
+
     container-type: inline-size;
     touch-action: pan-y pinch-zoom;
   }
 
   &__container {
     @apply flex gap-4;
+
     backface-visibility: hidden;
   }
 
   &__slide {
     @apply shrink-0 overflow-hidden rounded-[var(--radius)] border-0 bg-transparent p-0;
+
     flex: 0 0 min(280px, 85cqw);
     min-width: 0;
 

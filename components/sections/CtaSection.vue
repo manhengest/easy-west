@@ -1,6 +1,6 @@
 <template>
   <div class="cta-section-wrap">
-    <section id="contacts" class="cta-section" v-motion="scrollVisible()">
+    <section id="contacts" v-motion="scrollVisible()" class="cta-section">
       <div class="cta-section__content">
         <h2 class="cta-section__title">
           {{ t('cta.title') }}

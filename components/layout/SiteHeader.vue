@@ -13,7 +13,7 @@
           class="site-header__logo"
           fetchpriority="high"
           decoding="async"
-        />
+        >
       </NuxtLink>
 
       <nav class="site-header__nav" :aria-label="t('nav.primary')">
@@ -82,7 +82,7 @@
                   height="40"
                   class="site-header__logo"
                   decoding="async"
-                />
+                >
               </NuxtLink>
               <button
                 type="button"

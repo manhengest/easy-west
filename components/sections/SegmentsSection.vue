@@ -1,5 +1,5 @@
 <template>
-  <section id="segments" class="segments" v-motion="scrollVisible()">
+  <section id="segments" v-motion="scrollVisible()" class="segments">
     <header class="segments__header">
       <h2 class="segments__title">
         {{ t('segments.title') }}
@@ -12,8 +12,8 @@
       <li
         v-for="(segment, index) in segments"
         :key="segment.id"
-        class="segments__card"
         v-motion="scrollVisible(index * 80)"
+        class="segments__card"
       >
         <button
           type="button"

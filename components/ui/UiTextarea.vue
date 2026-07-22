@@ -47,7 +47,13 @@ const props = withDefaults(
     inputId?: string
     rows?: number
   }>(),
-  { rows: 4 },
+  {
+    rows: 4,
+    error: undefined,
+    hint: undefined,
+    placeholder: undefined,
+    inputId: undefined,
+  },
 )
 
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()

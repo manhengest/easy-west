@@ -68,7 +68,12 @@ const props = withDefaults(
     selectId?: string
     required?: boolean
   }>(),
-  { required: false },
+  {
+    required: false,
+    error: undefined,
+    hint: undefined,
+    selectId: undefined,
+  },
 )
 
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()

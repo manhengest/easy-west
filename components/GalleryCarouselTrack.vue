@@ -18,7 +18,7 @@
             loading="lazy"
             decoding="async"
             class="gallery-carousel__img"
-          />
+          >
         </button>
       </div>
     </div>

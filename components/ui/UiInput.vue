@@ -51,7 +51,15 @@ const props = withDefaults(
     inputId?: string
     required?: boolean
   }>(),
-  { type: 'text' },
+  {
+    type: 'text',
+    error: undefined,
+    hint: undefined,
+    placeholder: undefined,
+    autocomplete: undefined,
+    inputId: undefined,
+    required: false,
+  },
 )
 
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()

@@ -47,7 +47,7 @@ export interface AccordionItem {
   description: string
 }
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     items: AccordionItem[]
     single?: boolean

@@ -1,5 +1,5 @@
 <template>
-  <section id="gallery" class="gallery-section" v-motion="scrollVisible()">
+  <section id="gallery" v-motion="scrollVisible()" class="gallery-section">
     <header class="gallery-section__header">
       <h2 class="gallery-section__title">
         {{ t('gallery.title') }}
