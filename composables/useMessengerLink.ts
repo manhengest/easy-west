@@ -1,4 +1,5 @@
 import type { MessengerChannel } from '~/composables/useContacts'
+import { watchCustomSchemeHandoff } from '~/shared/custom-scheme-handoff'
 import { openExternalHref } from '~/shared/open-external'
 
 const REVEAL_PROTECTED_CHANNELS = new Set<MessengerChannel>(['whatsapp', 'telegram', 'viber'])
@@ -23,6 +24,7 @@ function gtmEventFor(channel: MessengerChannel): string {
 export function useMessengerActions() {
   const { hrefFor } = useContacts()
   const { pushEvent } = useGtm()
+  const { showViberFallbackToast } = useViberFallbackToast()
 
   function trackClick(channel: MessengerChannel) {
     pushEvent(gtmEventFor(channel), { channel })
@@ -31,6 +33,13 @@ export function useMessengerActions() {
   function openMessenger(channel: MessengerChannel) {
     trackClick(channel)
     openExternalHref(hrefFor(channel))
+    if (channel === 'viber') {
+      void watchCustomSchemeHandoff().then((result) => {
+        if (result === 'stayed') {
+          showViberFallbackToast()
+        }
+      })
+    }
   }
 
   return {

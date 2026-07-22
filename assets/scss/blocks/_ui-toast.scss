@@ -1,0 +1,48 @@
+.ui-toast {
+  @apply fixed bottom-4 left-4 right-4 z-50 mx-auto flex max-w-[28rem] flex-col gap-3 rounded-[1.75rem] bg-white p-4 shadow-[0_12px_40px_rgb(15_18_22_/_12%)] sm:left-auto sm:right-4 sm:p-5;
+
+  &__message {
+    @apply pr-8 text-sm leading-relaxed text-foreground;
+  }
+
+  &__actions {
+    @apply flex flex-col gap-2 sm:flex-row sm:flex-wrap;
+  }
+
+  &__action {
+    @apply inline-flex items-center justify-center rounded-2xl border border-[#e0e0e0] bg-transparent px-4 py-2 text-sm font-medium text-foreground no-underline transition-colors;
+
+    &:hover {
+      @apply border-[#c8c8c8] bg-[#f5f5f5];
+    }
+
+    &_primary {
+      @apply border-foreground bg-foreground text-white;
+
+      &:hover {
+        @apply border-foreground bg-foreground/90 text-white;
+      }
+    }
+  }
+
+  &__close {
+    @apply absolute right-3 top-3 flex size-8 items-center justify-center rounded-full text-foreground/70 transition-colors;
+
+    &:hover {
+      @apply bg-[#f5f5f5] text-foreground;
+    }
+  }
+}
+
+.ui-toast-enter-active,
+.ui-toast-leave-active {
+  transition:
+    opacity 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ui-toast-enter-from,
+.ui-toast-leave-to {
+  opacity: 0;
+  transform: translateY(0.75rem);
+}

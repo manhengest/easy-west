@@ -6,6 +6,7 @@
     </main>
     <SiteFooter />
     <CookieBanner />
+    <UiToastHost />
     <LeadFormHost v-model="leadOpen" :source="leadSource" />
   </div>
 </template>

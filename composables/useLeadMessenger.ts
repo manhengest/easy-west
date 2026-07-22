@@ -5,12 +5,14 @@ import {
   isMessengerContactMethod,
   type LeadMessageFields,
 } from '~/shared/messenger-deeplink'
+import { watchCustomSchemeHandoff } from '~/shared/custom-scheme-handoff'
 import { openExternalHref } from '~/shared/open-external'
 
 export function useLeadMessenger() {
   const { t } = useI18n()
   const { links } = useContacts()
   const { trackClick } = useMessengerActions()
+  const { showViberFallbackToast } = useViberFallbackToast()
 
   function buildMessage(fields: LeadMessageFields): string {
     return buildLeadMessage(fields, {
@@ -59,6 +61,14 @@ export function useLeadMessenger() {
 
     trackClick(method)
     openExternalHref(href, options?.tab)
+
+    if (method === 'viber') {
+      void watchCustomSchemeHandoff().then((result) => {
+        if (result === 'stayed') {
+          showViberFallbackToast()
+        }
+      })
+    }
   }
 
   return {

@@ -35,7 +35,12 @@
     "phone": "Подзвонити",
     "whatsapp": "WhatsApp",
     "telegram": "Telegram",
-    "viber": "Viber"
+    "viber": "Viber",
+    "viberFallback": {
+      "message": "Схоже, Viber не встановлено або не відкрився. Спробуйте завантажити додаток або напишіть у Telegram.",
+      "download": "Завантажити Viber",
+      "telegram": "Написати в Telegram"
+    }
   },
   "hero": {
     "title": "Міжнародні переїзди по Європі",
