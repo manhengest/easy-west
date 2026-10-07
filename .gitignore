@@ -1,5 +1,7 @@
 # Nuxt dev/build outputs
 .output
+.output.next
+.output.prev
 .data
 .nuxt
 .nitro
@@ -24,6 +26,7 @@ logs
 .env.*
 !.env.example
 !.env.e2e.example
+!.env.deploy.example
 
 # Generated fonts (rebuilt via pnpm fonts:sync)
 public/fonts/
@@ -31,7 +34,9 @@ public/fonts/
 # Generated brand assets (rebuilt via pnpm assets:brand)
 public/og/
 
-.cursor/
+.cursor/*
+!.cursor/commands/
+!.cursor/commands/**
 
 # Test outputs
 coverage/

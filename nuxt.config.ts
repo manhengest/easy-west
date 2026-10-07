@@ -6,6 +6,7 @@ if (process.env.NODE_ENV !== 'test' && process.env.SKIP_ENV_VALIDATION !== 'true
 }
 
 const siteUrl = process.env.NUXT_PUBLIC_SITE_URL!
+const outputDir = process.env.NUXT_OUTPUT_DIR
 
 const staticPages = ['', 'privacy', 'cookies', 'terms', 'accessibility'] as const
 const prerenderRoutes = [
@@ -153,6 +154,17 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: 'node-server',
+    // Deploy builds into a side directory so the live `.output` keeps serving
+    // until the new build is swapped in.
+    ...(outputDir
+      ? {
+          output: {
+            dir: outputDir,
+            serverDir: `${outputDir}/server`,
+            publicDir: `${outputDir}/public`,
+          },
+        }
+      : {}),
     prerender: {
       routes: prerenderRoutes,
       crawlLinks: false,
