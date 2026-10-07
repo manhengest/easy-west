@@ -45,6 +45,12 @@ SSH-only (no review, no push): `pnpm deploy:prod`. Credentials live in gitignore
 On the server the script runs:
 
 ```bash
+# Non-interactive login shells return before the fnm block in .bashrc.
+FNM_PATH="${HOME}/.local/share/fnm"
+if [[ -d "$FNM_PATH" ]]; then
+  export PATH="$FNM_PATH:$PATH"
+  eval "$(fnm env --shell bash)"
+fi
 cd /var/www/easy-west
 git fetch origin main
 git checkout -f -B main origin/main
