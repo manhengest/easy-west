@@ -79,3 +79,17 @@ runbooks/       # Deploy ops
 - [README.md](README.md) — setup, env table, deploy pointers
 - [.cursor/plans/easy_west_architecture_47acd201.plan.md](.cursor/plans/easy_west_architecture_47acd201.plan.md) — full architecture & delivery plan
 - [runbooks/deploy-vps.md](runbooks/deploy-vps.md) — VPS deployment
+
+## Agent skills
+
+### Issue tracker
+
+Issues live as local markdown under `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five-role vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: root `GLOSSARY.md` + `docs/adr/`. See `docs/agents/domain.md`.

@@ -3,6 +3,7 @@ import { validLeadSubmitBody, validPhoneLeadBody } from '../fixtures/leads'
 
 const verifyTurnstileToken = vi.fn()
 const notifyLeadChannels = vi.fn()
+const createPipelineCard = vi.fn()
 const readBody = vi.fn()
 const useRuntimeConfig = vi.fn()
 const getRequestIP = vi.fn()
@@ -17,6 +18,11 @@ vi.mock('~/server/utils/turnstile', async (importOriginal) => {
 
 vi.mock('~/server/utils/lead-notify', () => ({
   notifyLeadChannels: (...args: unknown[]) => notifyLeadChannels(...args),
+}))
+
+vi.mock('~/server/utils/keycrm', () => ({
+  buildPipelineCard: (ctx: unknown) => ({ built: ctx }),
+  createPipelineCard: (...args: unknown[]) => createPipelineCard(...args),
 }))
 
 vi.stubGlobal('readBody', readBody)
@@ -55,7 +61,9 @@ describe('POST /api/leads handler', () => {
   beforeEach(() => {
     verifyTurnstileToken.mockReset()
     notifyLeadChannels.mockReset()
+    createPipelineCard.mockReset()
     notifyLeadChannels.mockResolvedValue({ email: true, telegram: true })
+    createPipelineCard.mockResolvedValue({ ok: true })
     verifyTurnstileToken.mockResolvedValue({ ok: true })
   })
 
@@ -127,5 +135,88 @@ describe('POST /api/leads handler', () => {
     notifyLeadChannels.mockResolvedValue({ email: true, telegram: false })
     const res = await callHandler(validLeadSubmitBody({ turnstileToken: 'real-token' }))
     expect(res).toMatchObject({ ok: true })
+  })
+
+  it('creates a KeyCRM card after a successful notify', async () => {
+    const body = validLeadSubmitBody({ turnstileToken: 'real-token' })
+    await callHandler(body, { keycrmApiKey: 'crm-key' })
+
+    expect(createPipelineCard).toHaveBeenCalledTimes(1)
+    expect(createPipelineCard.mock.calls[0]?.[0]).toBe('crm-key')
+  })
+
+  it('returns 200 when KeyCRM fails', async () => {
+    createPipelineCard.mockResolvedValue({ ok: false, status: 500 })
+    const res = await callHandler(
+      validLeadSubmitBody({ turnstileToken: 'real-token' }),
+      { keycrmApiKey: 'crm-key' },
+    )
+
+    expect(res).toMatchObject({ ok: true })
+  })
+
+  it('returns 200 when KeyCRM throws', async () => {
+    createPipelineCard.mockRejectedValue(new Error('network'))
+    const res = await callHandler(
+      validLeadSubmitBody({ turnstileToken: 'real-token' }),
+      { keycrmApiKey: 'crm-key' },
+    )
+
+    expect(res).toMatchObject({ ok: true })
+  })
+
+  it('does not create a card when both notify channels fail', async () => {
+    notifyLeadChannels.mockResolvedValue({ email: false, telegram: false })
+
+    await expect(callHandler(
+      validLeadSubmitBody({ turnstileToken: 'real-token' }),
+      { keycrmApiKey: 'crm-key' },
+    )).rejects.toMatchObject({ statusCode: 502 })
+    expect(createPipelineCard).not.toHaveBeenCalled()
+  })
+
+  it('skips KeyCRM when the API key is empty', async () => {
+    await callHandler(validLeadSubmitBody({ turnstileToken: 'real-token' }), { keycrmApiKey: '' })
+    expect(createPipelineCard).not.toHaveBeenCalled()
+  })
+
+  it('skips KeyCRM for a non-production stub token', async () => {
+    await callHandler(
+      validLeadSubmitBody({ turnstileToken: 'stub-test-token' }),
+      { keycrmApiKey: 'crm-key' },
+    )
+    expect(createPipelineCard).not.toHaveBeenCalled()
+  })
+
+  it('does not create a second card when the submit is replayed', async () => {
+    const body = validLeadSubmitBody({ turnstileToken: 'real-token' })
+    await callHandler(body, { keycrmApiKey: 'crm-key' })
+    await callHandler(body, { keycrmApiKey: 'crm-key' })
+    expect(createPipelineCard).toHaveBeenCalledTimes(1)
+  })
+
+  it('returns the thank-you while KeyCRM is still creating the card', async () => {
+    let release: (value: { ok: true }) => void = () => {}
+    createPipelineCard.mockImplementation(() => new Promise((resolve) => {
+      release = resolve
+    }))
+    const body = validLeadSubmitBody({ turnstileToken: 'real-token' })
+
+    const res = await Promise.race([
+      callHandler(body, { keycrmApiKey: 'crm-key' }),
+      new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('still waiting on KeyCRM')), 50)
+      }),
+    ])
+
+    expect(res).toMatchObject({ ok: true })
+    expect(notifyLeadChannels).toHaveBeenCalledTimes(1)
+    expect(createPipelineCard).toHaveBeenCalledTimes(1)
+
+    await callHandler(body, { keycrmApiKey: 'crm-key' })
+    expect(notifyLeadChannels).toHaveBeenCalledTimes(1)
+    expect(createPipelineCard).toHaveBeenCalledTimes(1)
+
+    release({ ok: true })
   })
 })

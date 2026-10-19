@@ -9,7 +9,8 @@ describe('useLeadAttribution (branches)', () => {
     })
 
     const { attribution } = await mountComposable(() => useLeadAttribution())
-    expect(attribution.value?.utmSource).toBe('email')
+    expect(attribution.value?.last.utmSource).toBe('email')
+    expect(attribution.value?.first.utmSource).toBe('email')
   })
 
   it('ignores invalid cookie JSON', async () => {
@@ -25,6 +26,7 @@ describe('useLeadAttribution (branches)', () => {
 
     const { captureFromQuery, attribution } = await mountComposable(() => useLeadAttribution())
     captureFromQuery()
-    expect(attribution.value?.utmSource).toBe('existing')
+    expect(attribution.value?.last.utmSource).toBe('existing')
+    expect(attribution.value?.first.utmSource).toBe('existing')
   })
 })

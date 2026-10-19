@@ -1,5 +1,7 @@
 import { leadSubmitSchema, parseLeadPhoneE164 } from '~/shared/lead-schema'
+import type { LeadSubmitPayload } from '~/shared/lead-schema'
 import { notifyLeadChannels } from '../utils/lead-notify'
+import { buildPipelineCard, createPipelineCard } from '../utils/keycrm'
 import { LEAD_TURNSTILE_ACTION } from '~/shared/lead-constants'
 import { isStubTurnstileToken, verifyTurnstileToken } from '../utils/turnstile'
 
@@ -99,5 +101,28 @@ export default defineEventHandler(async (event) => {
 
   idempotencyCache.set(idemKey, { status: 200, body: response })
 
+  if (!stubToken || isProduction) {
+    void postKeycrmCard(config.keycrmApiKey, { leadId, phoneE164, payload })
+  }
+
   return response
 })
+
+async function postKeycrmCard(
+  apiKey: string | undefined,
+  ctx: { leadId: string, phoneE164: string | null, payload: LeadSubmitPayload },
+) {
+  if (!apiKey) {
+    return
+  }
+
+  try {
+    const result = await createPipelineCard(apiKey, buildPipelineCard(ctx))
+    if (!result.ok) {
+      console.error('[leads] KeyCRM card was not created', { leadId: ctx.leadId, status: result.status })
+    }
+  }
+  catch (error) {
+    console.error('[leads] KeyCRM card was not created', { leadId: ctx.leadId, error })
+  }
+}

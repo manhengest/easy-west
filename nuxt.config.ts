@@ -138,6 +138,7 @@ export default defineNuxtConfig({
     telegramBotToken: '',
     telegramChatId: '',
     turnstileSecret: '',
+    keycrmApiKey: '',
     prodLeadsToEmail: '',
     deployEnv: process.env.NUXT_DEPLOY_ENV ?? 'development',
     public: {

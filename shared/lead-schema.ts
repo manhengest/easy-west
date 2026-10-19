@@ -72,8 +72,23 @@ export const leadSubmitSchema = z.object({
   utmCampaign: z.string().optional(),
   utmContent: z.string().optional(),
   utmTerm: z.string().optional(),
+  gclid: z.string().optional(),
+  gbraid: z.string().optional(),
+  wbraid: z.string().optional(),
+  fbclid: z.string().optional(),
   referrer: z.string().optional(),
   landingPath: z.string().optional(),
+  firstUtmSource: z.string().optional(),
+  firstUtmMedium: z.string().optional(),
+  firstUtmCampaign: z.string().optional(),
+  firstUtmContent: z.string().optional(),
+  firstUtmTerm: z.string().optional(),
+  firstGclid: z.string().optional(),
+  firstGbraid: z.string().optional(),
+  firstWbraid: z.string().optional(),
+  firstFbclid: z.string().optional(),
+  firstTouchedAt: z.string().optional(),
+  firstLandingPath: z.string().optional(),
   website: z
     .string()
     .optional()

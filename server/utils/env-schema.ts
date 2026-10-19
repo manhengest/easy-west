@@ -9,6 +9,7 @@ export const serverEnvSchema = z.object({
   NUXT_TELEGRAM_BOT_TOKEN: z.string().min(1),
   NUXT_TELEGRAM_CHAT_ID: z.string().min(1),
   NUXT_TURNSTILE_SECRET: z.string().min(1),
+  NUXT_KEYCRM_API_KEY: z.string().optional(),
   NUXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1),
   NUXT_PUBLIC_SITE_URL: z.string().url(),
   NUXT_PUBLIC_GTM_ID: z.string().optional(),
