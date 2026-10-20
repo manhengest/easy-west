@@ -11,6 +11,8 @@ dist
 
 # Node dependencies
 node_modules
+.pnpm-store
+crm
 
 # Logs
 logs
