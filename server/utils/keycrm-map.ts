@@ -25,4 +25,6 @@ export const KEYCRM_FIELDS = {
   fbclid: 'LD_1018',
   channel: 'LD_1019',
   locale: 'LD_1020',
+  gaClientId: 'LD_1021',
+  fbp: 'LD_1022',
 } as const

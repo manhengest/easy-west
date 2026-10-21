@@ -9,21 +9,17 @@ Credentials file: `.env.deploy` (gitignored). Deploy script: `scripts/deploy-pro
 Do not commit, push, or SSH when any of these is true:
 
 - Current branch is not `main`
-- Bugbot reports a Critical or High finding
-- The review subagent fails
+- The inline review reports a Critical or High finding
 - `git push` is rejected
 - `bash scripts/deploy-prod.sh` exits non-zero
 
 ## Steps
 
-1. Read `/Users/admin/.cursor/skills-cursor/review-bugbot/SKILL.md` and follow it. Launch one Bugbot subagent (`run_in_background: false`, description `Bugbot`) before any git write or SSH. Prompt:
+1. Before any git write or SSH, review `branch changes` yourself in this same turn. Do not launch a Bugbot or other review subagent. Do not call Task/Subagent for review.
 
-```text
-Full Repository Path: /Users/admin/Projects/easy-west
-Diff: branch changes
-```
+   Compute the diff against the merge-base with `origin/main` (committed + staged + unstaged on `main`). If there is no diff, say so in one sentence and continue. If there are no issues, say "Review found no bugs". If there are issues, print a compact markdown table with one row per finding, sorted by severity (highest first), using exactly these columns: Severity, Location (file:line), Finding.
 
-2. Show the review (table, "Bugbot found no bugs", or no diff). Stop on Critical or High.
+2. Show the review (table, "Review found no bugs", or no diff). Stop on Critical or High.
 3. If the working tree has deployable changes, commit them. Match recent `git log` style. Never stage `.env`, `.env.deploy`, or other secrets. Skip this step when the tree is clean.
 4. Push `main`: `git push origin main`. No force push. Skip when `main` already matches `origin/main`.
 5. Run `bash scripts/deploy-prod.sh` with full permissions. Allow 20 minutes. The script reads `.env.deploy` and on the VPS runs:

@@ -36,6 +36,28 @@ describe('useLeadAttribution', () => {
     expect(gtmAttribution.value.utm_source).toBe('google')
     expect(gtmAttribution.value.utm_medium).toBe('cpc')
   })
+
+  it('adds click ids from the visit and the ad cookies', async () => {
+    document.cookie = '_ga=GA1.1.111.222'
+    document.cookie = '_fbp=fb.1.10.999'
+    const cookie = useCookie('ew_attribution')
+    cookie.value = JSON.stringify({
+      gclid: 'g-1',
+      fbclid: 'f-1',
+      landingPath: '/',
+    })
+
+    const { hiddenFields, gtmAttribution } = await mountComposable(() => useLeadAttribution())
+
+    expect(hiddenFields.value.gaClientId).toBe('111.222')
+    expect(hiddenFields.value.fbp).toBe('fb.1.10.999')
+    expect(gtmAttribution.value).toMatchObject({
+      gclid: 'g-1',
+      fbclid: 'f-1',
+      ga_client_id: '111.222',
+      fbp: 'fb.1.10.999',
+    })
+  })
 })
 
 describe('useLeadForm', () => {

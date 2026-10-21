@@ -82,6 +82,10 @@ export function buildLeadMessage(
   return parts.join('\n')
 }
 
+export function messengerApplicationCode(cardId: number): string {
+  return `Код заявки: EW-${cardId}`
+}
+
 export function buildMessengerDeeplink(
   method: ContactMethod,
   message: string,
@@ -103,7 +107,11 @@ export function buildMessengerDeeplink(
     }
     case 'viber': {
       const digits = extractViberNumber(links.viber, links.phone)
-      return `viber://chat?number=%2B${digits}`
+      const base = `viber://chat?number=%2B${digits}`
+      if (!message.trim()) {
+        return base
+      }
+      return `${base}&draft=${encoded}`
     }
     case 'phone':
       return links.phone.startsWith('tel:') ? links.phone : `tel:${links.phone.replace(/\s/g, '')}`

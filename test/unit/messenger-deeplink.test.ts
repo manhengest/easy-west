@@ -3,6 +3,7 @@ import {
   buildLeadMessage,
   buildMessengerDeeplink,
   isMessengerContactMethod,
+  messengerApplicationCode,
 } from '~/shared/messenger-deeplink'
 
 const lines = {
@@ -47,9 +48,20 @@ describe('buildMessengerDeeplink', () => {
     expect(href).toBe(`https://t.me/easywestdelivery?text=${encodeURIComponent(message)}`)
   })
 
-  it('builds Viber deeplink', () => {
+  it('builds Viber deeplink with the message already in the draft field', () => {
     const href = buildMessengerDeeplink('viber', message, links)
-    expect(href).toBe('viber://chat?number=%2B380933218899')
+    expect(href).toBe(`viber://chat?number=%2B380933218899&draft=${encodeURIComponent(message)}`)
+  })
+
+  it('puts the application code in the messenger draft', () => {
+    const code = messengerApplicationCode(148)
+    expect(code).toBe('Код заявки: EW-148')
+    expect(buildMessengerDeeplink('whatsapp', code, links)).toBe(
+      `https://wa.me/380933218899?text=${encodeURIComponent(code)}`,
+    )
+    expect(buildMessengerDeeplink('viber', code, links)).toContain(
+      `draft=${encodeURIComponent(code)}`,
+    )
   })
 
   it('builds tel link for phone method with tel prefix', () => {

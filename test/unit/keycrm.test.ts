@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { buildPipelineCard, createPipelineCard } from '~/server/utils/keycrm'
+import { buildMessengerIntentCard, buildPipelineCard, createPipelineCard, leadCardTitle } from '~/server/utils/keycrm'
 import { KEYCRM_API_URL, KEYCRM_FIELDS } from '~/server/utils/keycrm-map'
 import { validLeadSubmitBody, validPhoneLeadBody } from '../fixtures/leads'
 
@@ -26,10 +26,13 @@ describe('buildPipelineCard', () => {
         firstTouchedAt: '2026-10-01T00:00:00.000Z',
         firstLandingPath: '/start',
         firstGclid: 'first-click',
+        gaClientId: '111.222',
+        fbp: 'fb.1.10.999',
       }),
     })
 
-    expect(card.title).toBe('Kyiv → Warsaw')
+    expect(card.title).toBe('Лід')
+    expect(leadCardTitle(148)).toBe('Лід 148')
     expect(card.pipeline_id).toBe(1)
     expect(card.source_id).toBe(1)
     expect(card.contact).toEqual({ full_name: 'Заявка з сайту' })
@@ -52,6 +55,8 @@ describe('buildPipelineCard', () => {
       { uuid: KEYCRM_FIELDS.firstPage, value: '/start' },
       { uuid: KEYCRM_FIELDS.firstGclid, value: 'first-click' },
       { uuid: KEYCRM_FIELDS.gclid, value: 'last-click' },
+      { uuid: KEYCRM_FIELDS.gaClientId, value: '111.222' },
+      { uuid: KEYCRM_FIELDS.fbp, value: 'fb.1.10.999' },
     ]))
     expect(card.custom_fields?.some(field => field.uuid === KEYCRM_FIELDS.firstFbclid)).toBe(false)
   })
@@ -71,24 +76,104 @@ describe('buildPipelineCard', () => {
   })
 })
 
+describe('buildMessengerIntentCard', () => {
+  it('names a click after the messenger and keeps the route off the title', () => {
+    const card = buildMessengerIntentCard(7, {
+      channel: 'whatsapp',
+      locale: 'ua',
+      website: '',
+      gclid: 'click-1',
+      landingPath: '/?gclid=click-1',
+      gaClientId: '111.222',
+    })
+
+    expect(card.title).toBe('Лід')
+    expect(card.pipeline_id).toBe(7)
+    expect(card.contact).toEqual({ full_name: 'WhatsApp з сайту' })
+    expect(card.contact.phone).toBeUndefined()
+    expect(card.manager_comment).toContain('Клік з кнопки, діалогу ще немає')
+    expect(card.manager_comment).toContain('Сторінка: /?gclid=click-1')
+    expect(card.custom_fields).toEqual(expect.arrayContaining([
+      { uuid: KEYCRM_FIELDS.channel, value: ['WhatsApp'] },
+      { uuid: KEYCRM_FIELDS.gclid, value: 'click-1' },
+      { uuid: KEYCRM_FIELDS.gaClientId, value: '111.222' },
+    ]))
+    expect(card.custom_fields?.some(field => field.uuid === KEYCRM_FIELDS.from)).toBe(false)
+  })
+})
+
 describe('createPipelineCard', () => {
-  it('posts the card with a bearer token', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 })
+  it('posts the card and renames it with the KeyCRM id', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: async () => ({ id: 148 }),
+      })
+      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) })
     vi.stubGlobal('fetch', fetchMock)
 
     const result = await createPipelineCard('secret', {
-      title: 'Kyiv → Warsaw',
+      title: 'Лід',
       pipeline_id: 1,
       source_id: 1,
       contact: { full_name: 'Заявка з сайту' },
     })
 
-    expect(result).toEqual({ ok: true })
-    expect(fetchMock).toHaveBeenCalledWith(KEYCRM_API_URL, expect.objectContaining({
+    expect(result).toEqual({ ok: true, id: 148 })
+    expect(fetchMock).toHaveBeenNthCalledWith(1, KEYCRM_API_URL, expect.objectContaining({
       method: 'POST',
       headers: expect.objectContaining({ Authorization: 'Bearer secret' }),
     }))
+    expect(fetchMock).toHaveBeenNthCalledWith(2, `${KEYCRM_API_URL}/148`, expect.objectContaining({
+      method: 'PUT',
+      body: JSON.stringify({ title: 'Лід 148' }),
+    }))
 
+    vi.unstubAllGlobals()
+  })
+
+  it('retries the rename when the new card is not readable yet', async () => {
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: async () => ({ id: 148 }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 404, json: async () => ({}) })
+      .mockResolvedValueOnce({ ok: true, status: 202, json: async () => ({ status: true }) }))
+
+    const result = await createPipelineCard('secret', {
+      title: 'Лід',
+      pipeline_id: 1,
+      source_id: 1,
+      contact: { full_name: 'Заявка з сайту' },
+    })
+
+    expect(result).toEqual({ ok: true, id: 148 })
+    expect(vi.mocked(fetch).mock.calls[2]?.[0]).toBe(`${KEYCRM_API_URL}/148`)
+    vi.unstubAllGlobals()
+  })
+
+  it('keeps the created card when the rename fails', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: async () => ({ id: 148 }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 422, json: async () => ({}) }))
+
+    const result = await createPipelineCard('secret', {
+      title: 'Лід',
+      pipeline_id: 1,
+      source_id: 1,
+      contact: { full_name: 'Заявка з сайту' },
+    })
+
+    expect(result).toEqual({ ok: true, id: 148 })
+    errorSpy.mockRestore()
     vi.unstubAllGlobals()
   })
 

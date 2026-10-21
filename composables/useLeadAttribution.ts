@@ -1,4 +1,5 @@
 import type { LocationQuery } from 'vue-router'
+import { fbpFromCookie, gaClientIdFromCookie, readCookieValue } from '~/shared/click-ids'
 import {
   applyAttribution,
   normalizeAttribution,
@@ -49,6 +50,13 @@ function touchValue(touch: LeadAttribution['last'] | undefined, key: keyof LeadA
   return touch?.[key] ?? ''
 }
 
+function clientCookie(name: string): string {
+  if (typeof document === 'undefined') {
+    return ''
+  }
+  return readCookieValue(document.cookie, name) ?? ''
+}
+
 export function useLeadAttribution() {
   const route = useRoute()
   const cookie = useCookie<LeadAttribution | string | null>(ATTRIBUTION_COOKIE, {
@@ -73,6 +81,8 @@ export function useLeadAttribution() {
   }
 
   const attribution = computed(() => normalizeAttribution(cookie.value))
+  const gaClientId = computed(() => gaClientIdFromCookie(clientCookie('_ga')) ?? '')
+  const fbp = computed(() => fbpFromCookie(clientCookie('_fbp')) ?? '')
 
   const hiddenFields = computed(() => {
     const first = attribution.value?.first
@@ -101,6 +111,8 @@ export function useLeadAttribution() {
       firstFbclid: touchValue(first, 'fbclid'),
       firstTouchedAt: touchValue(first, 'touchedAt'),
       firstLandingPath: touchValue(first, 'landingPath'),
+      gaClientId: gaClientId.value,
+      fbp: fbp.value,
     }
   })
 
@@ -110,6 +122,10 @@ export function useLeadAttribution() {
     utm_campaign: hiddenFields.value.utmCampaign || undefined,
     utm_content: hiddenFields.value.utmContent || undefined,
     utm_term: hiddenFields.value.utmTerm || undefined,
+    gclid: hiddenFields.value.gclid || undefined,
+    fbclid: hiddenFields.value.fbclid || undefined,
+    ga_client_id: hiddenFields.value.gaClientId || undefined,
+    fbp: hiddenFields.value.fbp || undefined,
     referrer: hiddenFields.value.referrer || undefined,
     landing_path: hiddenFields.value.landingPath || undefined,
   }))

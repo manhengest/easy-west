@@ -76,6 +76,8 @@ export const leadSubmitSchema = z.object({
   gbraid: z.string().optional(),
   wbraid: z.string().optional(),
   fbclid: z.string().optional(),
+  gaClientId: z.string().optional(),
+  fbp: z.string().optional(),
   referrer: z.string().optional(),
   landingPath: z.string().optional(),
   firstUtmSource: z.string().optional(),

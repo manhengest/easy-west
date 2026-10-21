@@ -139,6 +139,7 @@ export default defineNuxtConfig({
     telegramChatId: '',
     turnstileSecret: '',
     keycrmApiKey: '',
+    keycrmMessengerPipelineId: '',
     prodLeadsToEmail: '',
     deployEnv: process.env.NUXT_DEPLOY_ENV ?? 'development',
     public: {
@@ -150,6 +151,7 @@ export default defineNuxtConfig({
       contactTelegram: '',
       contactViber: '',
       contactEmail: process.env.NUXT_PUBLIC_CONTACT_EMAIL || 'info@easywest.eu',
+      messengerIntentEnabled: Boolean(process.env.NUXT_KEYCRM_MESSENGER_PIPELINE_ID?.trim()),
     },
   },
 

@@ -25,4 +25,10 @@ The latest landing in that 30-day window that carried a campaign tag or a click 
 _Avoid_: first touch
 
 **Click id**:
-A gclid, gbraid, wbraid, or fbclid on the landing URL.
+A gclid, gbraid, wbraid, or fbclid on the landing URL. The GA client id (`_ga`) and Meta browser id (`_fbp`) travel with the lead for a later ads import.
+
+**Lead title**:
+The pipeline card name `Лід {id}`, where `{id}` is the KeyCRM card id. The route stays in the Звідки and Куди fields.
+
+**Messenger intent**:
+A pipeline card created from a WhatsApp, Telegram, or Viber button click, before a conversation exists. It is off until `NUXT_KEYCRM_MESSENGER_PIPELINE_ID` is set.
