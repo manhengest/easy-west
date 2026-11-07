@@ -1,17 +1,8 @@
 import type { ContactMethod, LeadDevice, LeadSource, LocaleCode } from '~/shared/lead-constants'
 import type { LeadSubmitPayload } from '~/shared/lead-schema'
-import type { MessengerIntentPayload } from '~/shared/messenger-intent'
 import { KEYCRM_API_URL, KEYCRM_FIELDS, KEYCRM_PIPELINE_ID, KEYCRM_SOURCE_ID } from './keycrm-map'
 
 export const KEYCRM_PENDING_TITLE = 'Лід'
-
-const MESSENGER_CONTACT_NAMES = {
-  whatsapp: 'WhatsApp з сайту',
-  telegram: 'Telegram з сайту',
-  viber: 'Viber з сайту',
-} as const
-
-const MESSENGER_INTENT_COMMENT = 'Клік з кнопки, діалогу ще немає'
 
 const CONTACT_CHANNEL_VALUES: Record<ContactMethod, string> = {
   telegram: 'Telegram',
@@ -192,35 +183,6 @@ export function buildPipelineCard(ctx: KeycrmLeadContext): KeycrmPipelineCard {
 
   applyUtm(card, payload)
 
-  return card
-}
-
-export function buildMessengerIntentCard(
-  pipelineId: number,
-  payload: MessengerIntentPayload,
-): KeycrmPipelineCard {
-  const lines = [MESSENGER_INTENT_COMMENT]
-  const page = filled(payload.landingPath)
-  const referrer = filled(payload.referrer)
-  if (page) lines.push(`Сторінка: ${page}`)
-  if (referrer) lines.push(`Referrer: ${referrer}`)
-
-  const card: KeycrmPipelineCard = {
-    title: KEYCRM_PENDING_TITLE,
-    pipeline_id: pipelineId,
-    source_id: KEYCRM_SOURCE_ID,
-    contact: {
-      full_name: MESSENGER_CONTACT_NAMES[payload.channel],
-    },
-    manager_comment: lines.join('\n'),
-    custom_fields: [
-      { uuid: KEYCRM_FIELDS.channel, value: [CONTACT_CHANNEL_VALUES[payload.channel]] },
-      { uuid: KEYCRM_FIELDS.locale, value: [LOCALE_VALUES[payload.locale]] },
-      ...attributionFields(payload),
-    ],
-  }
-
-  applyUtm(card, payload)
   return card
 }
 

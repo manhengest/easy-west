@@ -82,10 +82,6 @@ export function buildLeadMessage(
   return parts.join('\n')
 }
 
-export function messengerApplicationCode(cardId: number): string {
-  return `Код заявки: EW-${cardId}`
-}
-
 export function buildMessengerDeeplink(
   method: ContactMethod,
   message: string,

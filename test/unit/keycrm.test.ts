@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { buildMessengerIntentCard, buildPipelineCard, createPipelineCard, leadCardTitle } from '~/server/utils/keycrm'
+import { buildPipelineCard, createPipelineCard, leadCardTitle } from '~/server/utils/keycrm'
 import { KEYCRM_API_URL, KEYCRM_FIELDS } from '~/server/utils/keycrm-map'
 import { validLeadSubmitBody, validPhoneLeadBody } from '../fixtures/leads'
 
@@ -73,32 +73,6 @@ describe('buildPipelineCard', () => {
       { uuid: KEYCRM_FIELDS.channel, value: ['Телефон'] },
       { uuid: KEYCRM_FIELDS.locale, value: ['RU'] },
     ]))
-  })
-})
-
-describe('buildMessengerIntentCard', () => {
-  it('names a click after the messenger and keeps the route off the title', () => {
-    const card = buildMessengerIntentCard(7, {
-      channel: 'whatsapp',
-      locale: 'ua',
-      website: '',
-      gclid: 'click-1',
-      landingPath: '/?gclid=click-1',
-      gaClientId: '111.222',
-    })
-
-    expect(card.title).toBe('Лід')
-    expect(card.pipeline_id).toBe(7)
-    expect(card.contact).toEqual({ full_name: 'WhatsApp з сайту' })
-    expect(card.contact.phone).toBeUndefined()
-    expect(card.manager_comment).toContain('Клік з кнопки, діалогу ще немає')
-    expect(card.manager_comment).toContain('Сторінка: /?gclid=click-1')
-    expect(card.custom_fields).toEqual(expect.arrayContaining([
-      { uuid: KEYCRM_FIELDS.channel, value: ['WhatsApp'] },
-      { uuid: KEYCRM_FIELDS.gclid, value: 'click-1' },
-      { uuid: KEYCRM_FIELDS.gaClientId, value: '111.222' },
-    ]))
-    expect(card.custom_fields?.some(field => field.uuid === KEYCRM_FIELDS.from)).toBe(false)
   })
 })
 
