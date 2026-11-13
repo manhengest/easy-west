@@ -10,8 +10,9 @@
 4. Відправте тестову заявку через форму.
 5. У GTM Preview перевірте:
    - подія `lead_submit_success` у dataLayer;
-   - спрацьовує тег GA4 Event (назва має збігатися з Key event у GA4).
-6. У GA4 → **Admin → Events** переконайтеся, що `lead_submit_success` позначено як **Key event** (конверсія).
+   - тег GA4 Event шле `generate_lead`;
+   - тег Meta Pixel шле стандартну подію `Lead`.
+6. У GA4 → **Admin → Events** позначте `generate_lead` як **Key event**. Кваліфікація і бронь: [ads-lead-events.md](ads-lead-events.md).
 
 Якщо подія є в Preview, але немає в GA4 — проблема в налаштуванні тега/конверсії в GTM/GA4, не на сайті.
 

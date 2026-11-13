@@ -1,7 +1,16 @@
 export const KEYCRM_PIPELINE_ID = 1
 export const KEYCRM_SOURCE_ID = 1
 
-export const KEYCRM_API_URL = 'https://openapi.keycrm.app/v1/pipelines/cards'
+export const KEYCRM_API_ORIGIN = 'https://openapi.keycrm.app/v1'
+export const KEYCRM_API_URL = `${KEYCRM_API_ORIGIN}/pipelines/cards`
+
+/** Header KeyCRM must send on the lead-status webhook. Not the API key. */
+export const KEYCRM_WEBHOOK_SECRET_HEADER = 'x-keycrm-webhook-secret'
+
+export const KEYCRM_STATUS = {
+  qualified: 'Кваліфіковано',
+  booked: 'Заброньовано',
+} as const
 
 /** Custom field uuids from the Переїзди pipeline. Not secrets. */
 export const KEYCRM_FIELDS = {

@@ -34,6 +34,7 @@ See [runbooks/deploy-vps.md](runbooks/deploy-vps.md) and [deploy/nginx.conf.exam
 |----------|---------|
 | `NUXT_DEPLOY_ENV` | `staging` \| `production` |
 | `NUXT_PUBLIC_SITE_URL` | Canonical / sitemap base URL |
+| Ads lead events | GA4, Meta, and Google Ads secrets — [runbooks/ads-lead-events.md](runbooks/ads-lead-events.md) |
 
 Locale files: `i18n/locales/` (`langDir: 'locales'` under the i18n module root).
 

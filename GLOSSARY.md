@@ -5,8 +5,24 @@ Language for a relocation enquiry, from the website form through the sales pipel
 ## Language
 
 **Lead**:
-One request for a move submitted through the website form. A later submission from the same person is another lead.
-_Avoid_: order, замовлення
+A request for a move, either through the website form or as a real message in a messenger. A click on Telegram, WhatsApp, or Viber is not a lead. A later request from the same person is another lead.
+_Avoid_: order, замовлення, click
+
+**Qualified lead**:
+A lead on the pipeline card named `Лід {id}` that a manager has moved to «Кваліфіковано». A chat card is not a qualified lead.
+_Avoid_: chat, запит на розрахунок
+
+**Booked move**:
+A lead on that same card that a manager has moved to «Заброньовано». This is the lead that converts.
+_Avoid_: оплачено, qualified lead
+
+**Completed move**:
+A move that has already been carried out. The pipeline has no status for it yet.
+_Avoid_: оплачено, booked move
+
+**Оплачено**:
+Money received for a lead. It is not a booked move and not a completed move.
+_Avoid_: booked move, completed move
 
 **Pipeline card**:
 The sales-pipeline record of one lead.
