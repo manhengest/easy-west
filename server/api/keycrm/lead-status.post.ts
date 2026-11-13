@@ -53,7 +53,18 @@ export default defineEventHandler(async (event) => {
     return { ok: true }
   }
 
-  const occurredAt = occurredAtFrom(notice.statusChangedAt) ?? occurredAtFrom(card.statusChangedAt) ?? new Date()
+  const occurredAt = occurredAtFrom(notice.statusChangedAt) ?? occurredAtFrom(card.statusChangedAt)
+  if (!occurredAt) {
+    console.error('[ads] status change has no status_changed_at', { cardId: card.id })
+    return { ok: true }
+  }
+
+  const fieldUuid = eventName === 'qualified_lead' ? marks.qualifiedField : marks.bookedField
+  if (!fieldUuid) {
+    console.error('[ads] KeyCRM mark field is not configured', { cardId: card.id, eventName })
+    throw createError({ statusCode: 502, statusMessage: 'KeyCRM mark field is not configured' })
+  }
+
   const delivery = await deliverAdsEvent({
     cardId: card.id,
     eventName,
@@ -66,23 +77,11 @@ export default defineEventHandler(async (event) => {
     fbp: card.fbp,
     phone: card.phone,
     value: card.value,
-    currency: card.currency,
+    currency: card.value === undefined ? undefined : 'UAH',
   }, adsCredentials(config))
 
-  if (!delivery.ok) {
+  if (!delivery.ok || !delivery.shouldMark) {
     throw createError({ statusCode: 502, statusMessage: 'Ads conversion delivery failed' })
-  }
-  if (!delivery.shouldMark) {
-    return { ok: true }
-  }
-
-  const fieldUuid = eventName === 'qualified_lead' ? marks.qualifiedField : marks.bookedField
-  if (!fieldUuid) {
-    console.error('[ads] event was sent but the KeyCRM mark field is not configured', {
-      cardId: card.id,
-      eventName,
-    })
-    return { ok: true }
   }
 
   const marked = await markAdsEventSent(apiKey, card.id, fieldUuid, occurredAt.toISOString())

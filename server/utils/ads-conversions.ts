@@ -65,16 +65,6 @@ function dueDestinations(event: AdsEventInput, credentials: AdsCredentials) {
   const configured: string[] = []
   const due: { name: string, send: () => Promise<boolean> }[] = []
 
-  const measurementId = credentials.ga4MeasurementId
-  const apiSecret = credentials.ga4ApiSecret
-  if (measurementId && apiSecret) {
-    configured.push('ga4')
-    due.push({
-      name: 'ga4',
-      send: () => sendGa4(event, measurementId, apiSecret),
-    })
-  }
-
   const pixelId = credentials.metaPixelId
   const capiToken = credentials.metaCapiToken
   if (pixelId && capiToken) {
@@ -116,6 +106,16 @@ function dueDestinations(event: AdsEventInput, credentials: AdsCredentials) {
         send: () => sendGoogleAds(event, credentials, customerId, actionId, click),
       })
     }
+  }
+
+  const measurementId = credentials.ga4MeasurementId
+  const apiSecret = credentials.ga4ApiSecret
+  if (measurementId && apiSecret) {
+    configured.push('ga4')
+    due.push({
+      name: 'ga4',
+      send: () => sendGa4(event, measurementId, apiSecret),
+    })
   }
 
   return { configured, due }

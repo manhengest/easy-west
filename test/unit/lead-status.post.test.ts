@@ -384,8 +384,8 @@ describe('POST /api/keycrm/lead-status', () => {
     expect(jsonBody(callsTo(fetchMock, 'google-analytics.com')[0]!).events[0].name).toBe('qualified_lead')
   })
 
-  it('does not mark a card when no ads destination is configured', async () => {
-    const result = await call(notice(new Date().toISOString()), undefined, readyConfig({
+  it('retries when no ads destination is configured', async () => {
+    await expect(call(notice(new Date().toISOString()), undefined, readyConfig({
       ga4MeasurementId: '',
       ga4ApiSecret: '',
       metaPixelId: '',
@@ -396,10 +396,28 @@ describe('POST /api/keycrm/lead-status', () => {
       googleAdsRefreshToken: '',
       googleAdsQualifiedActionId: '',
       googleAdsBookedActionId: '',
-    }))
+    }))).rejects.toMatchObject({ statusCode: 502 })
+    expect(callsTo(fetchMock, 'google-analytics.com')).toHaveLength(0)
+    expect(callsTo(fetchMock, KEYCRM_API_URL).some(entry => (entry[1] as RequestInit).method === 'PUT')).toBe(false)
+  })
+
+  it('does not send when the mark field is not configured', async () => {
+    await expect(call(
+      notice(new Date(Date.now() - 60_000).toISOString()),
+      undefined,
+      readyConfig({ keycrmAdsQualifiedField: '' }),
+    )).rejects.toMatchObject({ statusCode: 502 })
+    expect(callsTo(fetchMock, 'google-analytics.com')).toHaveLength(0)
+  })
+
+  it('does not invent an event time', async () => {
+    const result = await call({
+      event: 'lead.change_lead_status',
+      context: { id: 148, pipeline_id: 1 },
+    })
 
     expect(result).toEqual({ ok: true })
-    expect(callsTo(fetchMock, KEYCRM_API_URL).some(entry => (entry[1] as RequestInit).method === 'PUT')).toBe(false)
+    expect(callsTo(fetchMock, 'google-analytics.com')).toHaveLength(0)
   })
 
   it('sends the payment total in UAH when the card has no product total', async () => {
