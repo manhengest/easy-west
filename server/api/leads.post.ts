@@ -2,6 +2,7 @@ import { leadSubmitSchema, parseLeadPhoneE164 } from '~/shared/lead-schema'
 import type { LeadSubmitPayload } from '~/shared/lead-schema'
 import { notifyLeadChannels } from '../utils/lead-notify'
 import { buildPipelineCard, createPipelineCard } from '../utils/keycrm'
+import { postStapeLead, stapeLeadEndpoint } from '../utils/stape-lead'
 import { LEAD_TURNSTILE_ACTION } from '~/shared/lead-constants'
 import { isStubTurnstileToken, verifyTurnstileToken } from '../utils/turnstile'
 
@@ -103,6 +104,15 @@ export default defineEventHandler(async (event) => {
 
   if (!stubToken || isProduction) {
     void postKeycrmCard(config.keycrmApiKey, { leadId, phoneE164, payload })
+    if (stapeLeadEndpoint(config.stapeTaggingUrl)) {
+      void postStapeLead(config.stapeTaggingUrl, {
+        leadId,
+        phoneE164,
+        payload,
+        clientIp: getRequestIP(event, { xForwardedFor: true }) ?? undefined,
+        userAgent: getHeader(event, 'user-agent'),
+      })
+    }
   }
 
   return response

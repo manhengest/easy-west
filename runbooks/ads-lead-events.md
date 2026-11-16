@@ -1,6 +1,6 @@
 # Події ліда для реклами
 
-Форма вже шле `lead_submit_success` у браузері. Кваліфікація і бронь картки `Лід N` йдуть із KeyCRM на сервер. Чати `Чат з …` у рекламу не потрапляють: на них немає click id.
+Форма шле `lead_submit_success` у браузері і, окремо, один POST ліда на Stape. Кваліфікація і бронь картки `Лід N` йдуть із KeyCRM на сервер напряму в GA4, Meta і Google Ads. Чати `Чат з …` у рекламу не потрапляють: на них немає click id.
 
 Маршрут: `POST /api/keycrm/lead-status`.
 
@@ -9,9 +9,17 @@
 Контейнер `GTM-WQ2XF2QK`. Теги лишаються за згодою, як зараз.
 
 1. Тригер: подія dataLayer `lead_submit_success`.
-2. Тег GA4 Event: назва події `generate_lead`.
-3. Тег Meta Pixel: стандартна подія `Lead`.
+2. Тег GA4 Event: назва події `generate_lead`. Параметр `event_id` береться з dataLayer (`event_id`, той самий що `leadId`).
+3. Тег Meta Pixel: стандартна подія `Lead`, той самий `event_id`.
 4. Клік по Telegram, WhatsApp або Viber тегом ліда не є.
+
+## 1a. Stape (контейнер EasyWest)
+
+Сервер шле лід форми на `{NUXT_STAPE_TAGGING_URL}/lead` після прийнятої заявки. Порожній URL нічого не шле. Збій Stape не ламає форму. Повтор того самого idempotency key не шле вдруге. Банер cookie цей POST не зупиняє.
+
+Контейнер уже називається EasyWest. Tagging URL: `https://itzsizcx.eug.stape.io`. Серверний контейнер: `GTM-5LRKSDC6`. Опубліковано версію 3: клієнт `Lead` (Data Client, шлях `/lead`), тригер `generate_lead`, тег `GA4 generate_lead` (потік `G-BJH3W31G0X`, усі параметри event data) і тег `Meta Lead` (Facebook Conversion API, піксель `1139187785353404`, токен у тегу, подія успадковується: `generate_lead` → `Lead`). Тіло POST кладе GA client id у `client_id`, телефон у `phone`, клік у `fbc`, IP у `ip_override`, браузер у `user_agent`. Тег хешує телефон і підставляє `event_id` сам.
+
+Вебконтейнер `GTM-WQ2XF2QK`, версія 28: тег `lead_submit_success` шле в GA4 подію `generate_lead` з параметром `event_id` зі змінної рівня даних `event_id` (той самий id, що в POST). Тригер лишається `lead_submit_success`. Секрети живуть у тегах, не в другому серверному виклику. Кваліфікація і бронь сюди не йдуть. Окремий піддомен не додаємо.
 
 ## 2. GA4 і Google Ads (близько 15 хвилин)
 
@@ -51,7 +59,8 @@
 | --- | --- |
 | `NUXT_KEYCRM_WEBHOOK_SECRET` | Заголовок вебхука. Порожнє — маршрут відповідає 401 |
 | `NUXT_KEYCRM_API_KEY` | Читання картки. Уже є для форми |
-| `NUXT_GA4_MEASUREMENT_ID`, `NUXT_GA4_API_SECRET` | GA4 Measurement Protocol |
+| `NUXT_STAPE_TAGGING_URL` | Походження контейнера Stape для ліда форми. Порожнє вимикає POST `/lead` |
+| `NUXT_GA4_MEASUREMENT_ID`, `NUXT_GA4_API_SECRET` | GA4 Measurement Protocol для кваліфікації і броні |
 | `NUXT_META_PIXEL_ID`, `NUXT_META_CAPI_TOKEN` | Meta Conversions API |
 | `NUXT_GOOGLE_ADS_CUSTOMER_ID` | ID акаунта без дефісів |
 | `NUXT_GOOGLE_ADS_LOGIN_CUSTOMER_ID` | ID менеджера, якщо вхід через MCC. Інакше порожнє |

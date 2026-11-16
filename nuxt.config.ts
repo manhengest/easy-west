@@ -146,6 +146,7 @@ export default defineNuxtConfig({
     ga4ApiSecret: '',
     metaPixelId: '',
     metaCapiToken: '',
+    stapeTaggingUrl: '',
     googleAdsCustomerId: '',
     googleAdsLoginCustomerId: '',
     googleAdsClientId: '',

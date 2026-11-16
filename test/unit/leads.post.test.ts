@@ -7,6 +7,8 @@ const createPipelineCard = vi.fn()
 const readBody = vi.fn()
 const useRuntimeConfig = vi.fn()
 const getRequestIP = vi.fn()
+const getHeader = vi.fn()
+const fetchMock = vi.fn()
 
 vi.mock('~/server/utils/turnstile', async (importOriginal) => {
   const actual = await importOriginal<typeof import('~/server/utils/turnstile')>()
@@ -28,6 +30,8 @@ vi.mock('~/server/utils/keycrm', () => ({
 vi.stubGlobal('readBody', readBody)
 vi.stubGlobal('useRuntimeConfig', useRuntimeConfig)
 vi.stubGlobal('getRequestIP', getRequestIP)
+vi.stubGlobal('getHeader', getHeader)
+vi.stubGlobal('fetch', fetchMock)
 vi.stubGlobal('defineEventHandler', (fn: (event: unknown) => unknown) => fn)
 vi.stubGlobal('createError', (opts: { statusCode: number, statusMessage: string, data?: unknown }) => {
   const error = Object.assign(new Error(opts.statusMessage), opts)
@@ -35,6 +39,8 @@ vi.stubGlobal('createError', (opts: { statusCode: number, statusMessage: string,
 })
 
 const { default: handler } = await import('~/server/api/leads.post')
+
+const STAPE_URL = 'https://example.stape.io'
 
 function defaultRuntimeConfig(overrides: Record<string, unknown> = {}) {
   return {
@@ -45,9 +51,15 @@ function defaultRuntimeConfig(overrides: Record<string, unknown> = {}) {
     leadsToEmail: 'to@example.com',
     telegramBotToken: 'token',
     telegramChatId: '123',
+    stapeTaggingUrl: '',
     public: { siteUrl: 'https://easy-west.com' },
     ...overrides,
   }
+}
+
+function stapeBody(): Record<string, string> {
+  const init = fetchMock.mock.calls[0]?.[1] as { body?: string } | undefined
+  return JSON.parse(init?.body ?? '{}') as Record<string, string>
 }
 
 async function callHandler(body: unknown, configOverrides: Record<string, unknown> = {}) {
@@ -62,9 +74,13 @@ describe('POST /api/leads handler', () => {
     verifyTurnstileToken.mockReset()
     notifyLeadChannels.mockReset()
     createPipelineCard.mockReset()
+    fetchMock.mockReset()
+    getHeader.mockReset()
     notifyLeadChannels.mockResolvedValue({ email: true, telegram: true })
     createPipelineCard.mockResolvedValue({ ok: true })
     verifyTurnstileToken.mockResolvedValue({ ok: true })
+    fetchMock.mockResolvedValue({ ok: true, status: 200 })
+    getHeader.mockReturnValue('TestAgent')
   })
 
   it('returns 400 for invalid payload', async () => {
@@ -218,5 +234,109 @@ describe('POST /api/leads handler', () => {
     expect(createPipelineCard).toHaveBeenCalledTimes(1)
 
     release({ ok: true })
+  })
+
+  it('posts one form lead to Stape with the event id', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(1_700_000_000_000)
+    const body = validLeadSubmitBody({
+      turnstileToken: 'real-token',
+      gclid: 'g-1',
+      fbclid: 'f-1',
+      gaClientId: 'GA1.1.1.1',
+      fbp: 'fb.1.1.1',
+      landingPath: '/?gclid=g-1',
+    })
+    const res = await callHandler(body, { stapeTaggingUrl: `${STAPE_URL}/` }) as { leadId: string }
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(`${STAPE_URL}/lead`)
+    expect(stapeBody()).toEqual({
+      event_name: 'generate_lead',
+      event_id: res.leadId,
+      client_id: 'GA1.1.1.1',
+      gclid: 'g-1',
+      fbclid: 'f-1',
+      fbc: 'fb.1.1700000000000.f-1',
+      ga_client_id: 'GA1.1.1.1',
+      fbp: 'fb.1.1.1',
+      client_ip_address: '127.0.0.1',
+      ip_override: '127.0.0.1',
+      client_user_agent: 'TestAgent',
+      user_agent: 'TestAgent',
+      landing_path: '/?gclid=g-1',
+    })
+    expect(stapeBody().phone).toBeUndefined()
+    vi.mocked(Date.now).mockRestore()
+  })
+
+  it('sends the E.164 phone when the contact method is phone', async () => {
+    const res = await callHandler(
+      validPhoneLeadBody({ turnstileToken: 'real-token' }),
+      { stapeTaggingUrl: STAPE_URL },
+    ) as { leadId: string, phoneE164: string }
+
+    expect(stapeBody()).toMatchObject({
+      event_id: res.leadId,
+      phone: res.phoneE164,
+    })
+  })
+
+  it('returns 200 when Stape fails', async () => {
+    fetchMock.mockRejectedValue(new Error('stape down'))
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const res = await callHandler(
+      validLeadSubmitBody({ turnstileToken: 'real-token' }),
+      { stapeTaggingUrl: STAPE_URL },
+    )
+    await Promise.allSettled(fetchMock.mock.results.map(result => result.value))
+
+    expect(res).toMatchObject({ ok: true })
+    errorSpy.mockRestore()
+  })
+
+  it('returns 200 when Stape rejects the lead', async () => {
+    fetchMock.mockResolvedValue({ ok: false, status: 502 })
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const res = await callHandler(
+      validLeadSubmitBody({ turnstileToken: 'real-token' }),
+      { stapeTaggingUrl: STAPE_URL },
+    )
+    await Promise.allSettled(fetchMock.mock.results.map(result => result.value))
+
+    expect(res).toMatchObject({ ok: true })
+    errorSpy.mockRestore()
+  })
+
+  it('does not post the same lead to Stape twice', async () => {
+    const body = validLeadSubmitBody({ turnstileToken: 'real-token' })
+    await callHandler(body, { stapeTaggingUrl: STAPE_URL })
+    await callHandler(body, { stapeTaggingUrl: STAPE_URL })
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('skips Stape when the tagging URL is empty', async () => {
+    await callHandler(validLeadSubmitBody({ turnstileToken: 'real-token' }), { stapeTaggingUrl: '  ' })
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('skips Stape for a non-production stub token', async () => {
+    await callHandler(
+      validLeadSubmitBody({ turnstileToken: 'stub-test-token' }),
+      { stapeTaggingUrl: STAPE_URL },
+    )
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('does not post to Stape when both notify channels fail', async () => {
+    notifyLeadChannels.mockResolvedValue({ email: false, telegram: false })
+
+    await expect(callHandler(
+      validLeadSubmitBody({ turnstileToken: 'real-token' }),
+      { stapeTaggingUrl: STAPE_URL },
+    )).rejects.toMatchObject({ statusCode: 502 })
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

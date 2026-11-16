@@ -1,0 +1,3 @@
+# Form lead is measured even without analytics consent
+
+A form lead is sent onward for measurement even when the cookie banner was rejected, because a rejected banner would otherwise leave a hole in the pixel and in GA4. Analytics consent governs browser tags only. Form consent, the checkbox on the form, covers this measurement, and the privacy policy says so. The browser tags stay behind analytics consent and share the lead's event id, so the person is counted once. Direct GA4 and Meta calls from the server were rejected for this event: those tags live in one place. A qualified lead and a booked move stay on the direct APIs. The cookie page is unchanged.

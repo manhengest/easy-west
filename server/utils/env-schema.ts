@@ -17,6 +17,7 @@ export const serverEnvSchema = z.object({
   NUXT_GA4_API_SECRET: z.string().optional(),
   NUXT_META_PIXEL_ID: z.string().optional(),
   NUXT_META_CAPI_TOKEN: z.string().optional(),
+  NUXT_STAPE_TAGGING_URL: z.string().optional(),
   NUXT_GOOGLE_ADS_CUSTOMER_ID: z.string().optional(),
   NUXT_GOOGLE_ADS_LOGIN_CUSTOMER_ID: z.string().optional(),
   NUXT_GOOGLE_ADS_CLIENT_ID: z.string().optional(),

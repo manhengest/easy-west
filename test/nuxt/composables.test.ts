@@ -86,7 +86,12 @@ describe('useLeadForm', () => {
     expect(form.submitSuccess.value).toBe(true)
     expect(pushEvent).toHaveBeenCalledWith(
       'lead_submit_success',
-      expect.objectContaining({ source: 'hero', contactMethod: 'telegram' }),
+      expect.objectContaining({
+        source: 'hero',
+        contactMethod: 'telegram',
+        leadId: 'testlead01',
+        event_id: 'testlead01',
+      }),
     )
 
     vi.unstubAllGlobals()

@@ -207,6 +207,7 @@ export function useLeadForm(
       pushEvent('lead_submit_success', {
         source,
         leadId: res.leadId,
+        event_id: res.leadId,
         locale: locale.value,
         contactMethod: values.contactMethod,
         ...gtmAttribution.value,

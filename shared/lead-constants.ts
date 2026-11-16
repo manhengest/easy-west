@@ -1,4 +1,4 @@
-export const CONSENT_POLICY_VERSION = '2026-05-27'
+export const CONSENT_POLICY_VERSION = '2026-11-16'
 
 export const LEAD_TURNSTILE_ACTION = 'lead_submit'
 
