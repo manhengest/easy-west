@@ -269,15 +269,17 @@ describe('POST /api/leads handler', () => {
     vi.mocked(Date.now).mockRestore()
   })
 
-  it('sends the E.164 phone when the contact method is phone', async () => {
+  it('sends the entered phone when the contact method is phone', async () => {
+    const body = validPhoneLeadBody({ turnstileToken: 'real-token' })
     const res = await callHandler(
-      validPhoneLeadBody({ turnstileToken: 'real-token' }),
+      body,
       { stapeTaggingUrl: STAPE_URL },
     ) as { leadId: string, phoneE164: string }
 
+    expect(res.phoneE164).toBe(body.phone)
     expect(stapeBody()).toMatchObject({
       event_id: res.leadId,
-      phone: res.phoneE164,
+      phone: body.phone,
     })
   })
 

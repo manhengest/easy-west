@@ -97,9 +97,14 @@ describe('parseLeadPhoneE164', () => {
     expect(parseLeadPhoneE164(validLeadSubmitBody())).toBeNull()
   })
 
-  it('returns E.164 for phone method', () => {
+  it('returns the entered phone for phone method', () => {
     const payload = validPhoneLeadBody()
-    expect(parseLeadPhoneE164(payload)).toBe('+380933218899')
+    expect(parseLeadPhoneE164(payload)).toBe('+380 93 321 88 99')
+  })
+
+  it('does not prepend a default country code to local numbers', () => {
+    const payload = validPhoneLeadBody({ phone: '093 321 88 99' })
+    expect(parseLeadPhoneE164(payload)).toBe('093 321 88 99')
   })
 
   it('throws for invalid phone', () => {

@@ -110,9 +110,11 @@ export function parseLeadPhoneE164(payload: LeadSubmitPayload): string | null {
     return null
   }
 
-  const result = normalizePhoneToE164(payload.phone, payload.locale)
+  const phone = payload.phone.trim()
+  const result = normalizePhoneToE164(phone, payload.locale)
   if ('error' in result) {
     throw new Error('Invalid phone')
   }
-  return result.e164
+  // Forward the entered value only — do not rewrite with a default country code (e.g. +380).
+  return phone
 }
