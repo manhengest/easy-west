@@ -1,6 +1,6 @@
 /**
- * GTM + Consent Mode init — script composables must run in a plugin/setup context,
- * not inside conditional branches in useGtm().
+ * GTM + Consent Mode v2 — load the container immediately with denied defaults.
+ * Cookie banner only updates consent; it no longer gates the GTM script.
  */
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
@@ -27,17 +27,7 @@ export default defineNuxtPlugin(() => {
     },
   ])
 
-  const consentTrigger = useScriptTriggerConsent()
-  useScriptGoogleTagManager({
-    id: gtmId,
-    scriptOptions: { trigger: consentTrigger },
-  })
+  useScriptGoogleTagManager({ id: gtmId })
 
   initialized.value = true
-
-  return {
-    provide: {
-      gtmConsentTrigger: consentTrigger,
-    },
-  }
 })
