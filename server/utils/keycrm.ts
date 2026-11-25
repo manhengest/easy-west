@@ -1,6 +1,7 @@
 import type { ContactMethod, LeadDevice, LeadSource, LocaleCode } from '~/shared/lead-constants'
 import type { LeadSubmitPayload, MessengerLeadPayload } from '~/shared/lead-schema'
-import { KEYCRM_API_ORIGIN, KEYCRM_API_URL, KEYCRM_FIELDS, KEYCRM_PIPELINE_ID, KEYCRM_SOURCE_ID } from './keycrm-map'
+import type { PendingLead } from '~/shared/pending-lead'
+import { KEYCRM_API_ORIGIN, KEYCRM_API_URL, KEYCRM_FIELDS, KEYCRM_NEW_REQUEST_STATUS_ID, KEYCRM_PIPELINE_ID, KEYCRM_SOURCE_ID, KEYCRM_STATUS, messengerChannelForSource } from './keycrm-map'
 
 export const KEYCRM_PENDING_TITLE = 'Лід'
 
@@ -148,16 +149,24 @@ function applyUtm(card: UtmFields, payload: ClickAttribution): void {
   if (utmTerm) card.utm_term = utmTerm
 }
 
-function managerComment(payload: LeadSubmitPayload): string | undefined {
+interface VisitContext {
+  details?: string
+  source: LeadSource
+  device: LeadDevice
+  referrer?: string
+  landingPath?: string
+}
+
+function visitNote(label: 'Форма' | 'Кнопка', payload: VisitContext): string {
   const lines = [
-    filled(payload.details),
-    `Форма: ${SOURCE_LABELS[payload.source]}`,
+    label === 'Форма' ? filled(payload.details) : undefined,
+    `${label}: ${SOURCE_LABELS[payload.source]}`,
     `Пристрій: ${DEVICE_LABELS[payload.device]}`,
     filled(payload.referrer) ? `Referrer: ${payload.referrer}` : undefined,
     filled(payload.landingPath) ? `Сторінка: ${payload.landingPath}` : undefined,
   ].filter((line): line is string => Boolean(line))
 
-  return lines.length > 0 ? lines.join('\n') : undefined
+  return lines.join('\n')
 }
 
 export function buildPipelineCard(ctx: KeycrmLeadContext): KeycrmPipelineCard {
@@ -169,6 +178,7 @@ export function buildPipelineCard(ctx: KeycrmLeadContext): KeycrmPipelineCard {
     { uuid: KEYCRM_FIELDS.channel, value: [CONTACT_CHANNEL_VALUES[payload.contactMethod]] },
     { uuid: KEYCRM_FIELDS.locale, value: [LOCALE_VALUES[payload.locale]] },
     ...attributionFields(payload),
+    ...lastTouchFields(payload),
   ].filter((field): field is KeycrmCustomField => field !== null)
 
   const card: KeycrmPipelineCard = {
@@ -185,7 +195,7 @@ export function buildPipelineCard(ctx: KeycrmLeadContext): KeycrmPipelineCard {
     card.contact.phone = phoneE164
   }
 
-  const comment = managerComment(payload)
+  const comment = visitNote('Форма', payload)
   if (comment) {
     card.manager_comment = comment
   }
@@ -195,15 +205,14 @@ export function buildPipelineCard(ctx: KeycrmLeadContext): KeycrmPipelineCard {
   return card
 }
 
-function messengerComment(payload: MessengerLeadPayload): string {
-  const lines = [
-    `Кнопка: ${SOURCE_LABELS[payload.source]}`,
-    `Пристрій: ${DEVICE_LABELS[payload.device]}`,
-    filled(payload.referrer) ? `Referrer: ${payload.referrer}` : undefined,
-    filled(payload.landingPath) ? `Сторінка: ${payload.landingPath}` : undefined,
-  ].filter((line): line is string => Boolean(line))
-
-  return lines.join('\n')
+function lastTouchFields(payload: ClickAttribution): KeycrmCustomField[] {
+  return [
+    textField(KEYCRM_FIELDS.lastSource, payload.utmSource),
+    textField(KEYCRM_FIELDS.lastMedium, payload.utmMedium),
+    textField(KEYCRM_FIELDS.lastCampaign, payload.utmCampaign),
+    textField(KEYCRM_FIELDS.lastContent, payload.utmContent),
+    textField(KEYCRM_FIELDS.lastTerm, payload.utmTerm),
+  ].filter((field): field is KeycrmCustomField => field !== null)
 }
 
 export function buildMessengerPipelineCard(payload: MessengerLeadPayload): KeycrmPipelineCard {
@@ -212,6 +221,7 @@ export function buildMessengerPipelineCard(payload: MessengerLeadPayload): Keycr
     { uuid: KEYCRM_FIELDS.channel, value: [CONTACT_CHANNEL_VALUES[payload.channel]] },
     { uuid: KEYCRM_FIELDS.locale, value: [LOCALE_VALUES[payload.locale]] },
     ...attributionFields(payload),
+    ...lastTouchFields(payload),
   ].filter((field): field is KeycrmCustomField => field !== null)
 
   const card: KeycrmPipelineCard = {
@@ -222,7 +232,7 @@ export function buildMessengerPipelineCard(payload: MessengerLeadPayload): Keycr
       full_name: 'Заявка з сайту',
     },
     custom_fields: customFields,
-    manager_comment: messengerComment(payload),
+    manager_comment: visitNote('Кнопка', payload),
   }
 
   applyUtm(card, payload)
@@ -231,29 +241,62 @@ export function buildMessengerPipelineCard(payload: MessengerLeadPayload): Keycr
 }
 
 export interface KeycrmLastTouchUpdate {
-  utm_source?: string
-  utm_medium?: string
-  utm_campaign?: string
-  utm_content?: string
-  utm_term?: string
   custom_fields?: KeycrmCustomField[]
 }
 
+export interface KeycrmCardFill {
+  title: string
+  note?: string
+  custom_fields: KeycrmCustomField[]
+}
+
 export function buildLastTouchUpdate(payload: ClickAttribution): KeycrmLastTouchUpdate {
-  const update: KeycrmLastTouchUpdate = {}
-  applyUtm(update, payload)
-  const clickIds = [
+  const fields = [
+    ...lastTouchFields(payload),
     textField(KEYCRM_FIELDS.gclid, payload.gclid),
     textField(KEYCRM_FIELDS.gbraid, payload.gbraid),
     textField(KEYCRM_FIELDS.wbraid, payload.wbraid),
     textField(KEYCRM_FIELDS.fbclid, payload.fbclid),
   ].filter((field): field is KeycrmCustomField => field !== null)
 
-  if (clickIds.length > 0) {
-    update.custom_fields = clickIds
-  }
+  return fields.length > 0 ? { custom_fields: fields } : {}
+}
 
-  return update
+function fieldsFromPending(record: PendingLead): KeycrmCustomField[] {
+  return [
+    record.kind === 'form' ? textField(KEYCRM_FIELDS.from, record.from) : null,
+    record.kind === 'form' ? textField(KEYCRM_FIELDS.to, record.to) : null,
+    textField(KEYCRM_FIELDS.leadId, record.leadId),
+    { uuid: KEYCRM_FIELDS.channel, value: [CONTACT_CHANNEL_VALUES[record.channel]] },
+    { uuid: KEYCRM_FIELDS.locale, value: [LOCALE_VALUES[record.locale]] },
+    ...attributionFields(record),
+    ...lastTouchFields(record),
+  ].filter((field): field is KeycrmCustomField => field !== null)
+}
+
+export function buildChatCardFill(record: PendingLead, cardId: number): KeycrmCardFill {
+  const note = visitNote(record.kind === 'form' ? 'Форма' : 'Кнопка', record)
+  return {
+    title: leadCardTitle(cardId),
+    ...(note ? { note } : {}),
+    custom_fields: fieldsFromPending(record),
+  }
+}
+
+export function buildPipelineCardFromPending(record: PendingLead): KeycrmPipelineCard {
+  const card: KeycrmPipelineCard = {
+    title: KEYCRM_PENDING_TITLE,
+    pipeline_id: KEYCRM_PIPELINE_ID,
+    source_id: KEYCRM_SOURCE_ID,
+    contact: { full_name: 'Заявка з сайту' },
+    custom_fields: fieldsFromPending(record),
+  }
+  const comment = visitNote(record.kind === 'form' ? 'Форма' : 'Кнопка', record)
+  if (comment) {
+    card.manager_comment = comment
+  }
+  applyUtm(card, record)
+  return card
 }
 
 export function keycrmId(value: unknown): number | null {
@@ -353,6 +396,10 @@ export interface PipelineCardView {
   fbclid?: string
   gaClientId?: string
   fbp?: string
+  leadId?: string
+  contactChannel?: string
+  sourceId: number | null
+  createdAt?: string
   qualifiedSent: boolean
   bookedSent: boolean
 }
@@ -431,57 +478,32 @@ export async function readPipelineCard(
       fbclid: fieldText(fields, KEYCRM_FIELDS.fbclid),
       gaClientId: fieldText(fields, KEYCRM_FIELDS.gaClientId),
       fbp: fieldText(fields, KEYCRM_FIELDS.fbp),
+      leadId: fieldText(fields, KEYCRM_FIELDS.leadId),
+      contactChannel: fieldText(fields, KEYCRM_FIELDS.channel),
+      sourceId: keycrmId(record.source_id),
+      createdAt: typeof record.created_at === 'string' ? record.created_at : undefined,
       qualifiedSent: Boolean(fieldText(fields, marks.qualifiedField)),
       bookedSent: Boolean(fieldText(fields, marks.bookedField)),
     },
   }
 }
 
-export type PipelineCardLeadIdResult =
-  | { ok: true, leadId: string | null }
-  | { ok: false, status: number }
-
-/** Reads LD_1003 so a messenger last-touch PUT can refuse a foreign card id. */
-export async function readPipelineCardLeadId(
+export async function updatePipelineCard(
   apiKey: string,
   cardId: number,
-): Promise<PipelineCardLeadIdResult> {
+  body: unknown,
+): Promise<KeycrmCardResult> {
   let response: Response
   try {
-    response = await keycrmRequest(
-      apiKey,
-      `${KEYCRM_API_URL}/${cardId}?include=custom_fields`,
-      'GET',
-    )
+    response = await keycrmRequest(apiKey, `${KEYCRM_API_URL}/${cardId}`, 'PUT', body)
   }
   catch {
-    console.error('[keycrm] card lead id read failed', { cardId })
     return { ok: false, status: 502 }
-  }
-
-  if (response.status === 404) {
-    return { ok: false, status: 404 }
   }
   if (!response.ok) {
-    console.error('[keycrm] card lead id read failed', { cardId, status: response.status })
     return { ok: false, status: response.status }
   }
-
-  let body: unknown
-  try {
-    body = await response.json()
-  }
-  catch {
-    return { ok: false, status: 502 }
-  }
-
-  const record = unwrapCard(body)
-  if (!record) {
-    return { ok: false, status: 502 }
-  }
-
-  const fields = readCustomFields(record.custom_fields)
-  return { ok: true, leadId: fieldText(fields, KEYCRM_FIELDS.leadId) ?? null }
+  return { ok: true, id: cardId }
 }
 
 export async function updatePipelineCardLastTouch(
@@ -489,16 +511,99 @@ export async function updatePipelineCardLastTouch(
   cardId: number,
   touch: ClickAttribution,
 ): Promise<KeycrmCardResult> {
-  const response = await keycrmRequest(
-    apiKey,
-    `${KEYCRM_API_URL}/${cardId}`,
-    'PUT',
-    buildLastTouchUpdate(touch),
-  )
-  if (!response.ok) {
-    return { ok: false, status: response.status }
+  const body = buildLastTouchUpdate(touch)
+  if (!body.custom_fields?.length) {
+    return { ok: true, id: cardId }
   }
-  return { ok: true, id: cardId }
+  return updatePipelineCard(apiKey, cardId, body)
+}
+
+export interface ListedChatCard {
+  id: number
+  sourceId: number | null
+  statusTitle: string
+  leadId?: string
+  contactChannel?: string
+  createdAt?: string
+  channel: ReturnType<typeof messengerChannelForSource>
+}
+
+const RECENT_CHAT_WINDOW_MS = 2 * 60 * 1000
+
+function keycrmStamp(ms: number): string {
+  return new Date(ms).toISOString().slice(0, 19).replace('T', ' ')
+}
+
+export function parseRecentChatCards(body: unknown): ListedChatCard[] {
+  const list = Array.isArray(body)
+    ? body
+    : body && typeof body === 'object' && Array.isArray((body as { data?: unknown }).data)
+      ? (body as { data: unknown[] }).data
+      : []
+  const cards: ListedChatCard[] = []
+  for (const item of list) {
+    const record = unwrapCard(item) ?? (item && typeof item === 'object' ? item as Record<string, unknown> : null)
+    if (!record) {
+      continue
+    }
+    const id = keycrmId(record.id)
+    if (id === null) {
+      continue
+    }
+    const fields = readCustomFields(record.custom_fields)
+    const statusId = keycrmId(record.status_id) ?? statusObjectId(record.status)
+    let statusTitle = readStatusTitle(record.status)
+    if (!statusTitle && statusId === KEYCRM_NEW_REQUEST_STATUS_ID) {
+      statusTitle = KEYCRM_STATUS.newRequest
+    }
+    const sourceId = keycrmId(record.source_id)
+    const card: ListedChatCard = {
+      id,
+      sourceId,
+      statusTitle,
+      channel: messengerChannelForSource(sourceId),
+    }
+    const leadId = fieldText(fields, KEYCRM_FIELDS.leadId)
+    const contactChannel = fieldText(fields, KEYCRM_FIELDS.channel)
+    const createdAt = typeof record.created_at === 'string' ? record.created_at : undefined
+    if (leadId) card.leadId = leadId
+    if (contactChannel) card.contactChannel = contactChannel
+    if (createdAt) card.createdAt = createdAt
+    cards.push(card)
+  }
+  return cards
+}
+
+export async function listRecentChatCards(apiKey: string, now = Date.now()): Promise<ListedChatCard[]> {
+  const filter = `${keycrmStamp(now - RECENT_CHAT_WINDOW_MS)},${keycrmStamp(now + 60_000)}`.replaceAll(' ', '%20')
+  const url = `${KEYCRM_API_URL}?limit=50&include=custom_fields,status&filter[created_between]=${filter}`
+  let response: Response
+  try {
+    response = await keycrmRequest(apiKey, url, 'GET')
+  }
+  catch {
+    console.error('[keycrm] recent card list failed')
+    return []
+  }
+  if (!response.ok) {
+    console.error('[keycrm] recent card list failed', { status: response.status })
+    return []
+  }
+  let body: unknown
+  try {
+    body = await response.json()
+  }
+  catch {
+    return []
+  }
+  const from = now - RECENT_CHAT_WINDOW_MS
+  return parseRecentChatCards(body).filter((card) => {
+    if (!card.channel || card.leadId || card.statusTitle !== KEYCRM_STATUS.newRequest || !card.createdAt) {
+      return false
+    }
+    const created = Date.parse(card.createdAt)
+    return !Number.isNaN(created) && created >= from && created <= now + 60_000
+  })
 }
 
 export async function markAdsEventSent(

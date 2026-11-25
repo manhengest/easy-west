@@ -35,6 +35,25 @@ describe('parseServerEnv', () => {
     ).toThrow(/must not match/)
   })
 
+  it('rejects a pending-leads directory inside .output', () => {
+    expect(() =>
+      parseServerEnv({
+        ...validServerEnv,
+        NUXT_PENDING_LEADS_DIR: '/var/www/easy-west/.output/pending-leads',
+      } as unknown as NodeJS.ProcessEnv),
+    ).toThrow(/outside \.output/)
+  })
+
+  it('requires an absolute pending-leads directory in production', () => {
+    expect(() =>
+      parseServerEnv({
+        ...validServerEnv,
+        NUXT_DEPLOY_ENV: 'production',
+        NUXT_PENDING_LEADS_DIR: '.data/pending-leads',
+      } as unknown as NodeJS.ProcessEnv),
+    ).toThrow(/absolute path/)
+  })
+
   it('allows staging recipient when prod email is unset', () => {
     const { NUXT_PROD_LEADS_TO_EMAIL: _, ...withoutProd } = validServerEnv
     const env = parseServerEnv(withoutProd as unknown as NodeJS.ProcessEnv)

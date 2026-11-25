@@ -1,18 +1,14 @@
-import { messengerLeadSchema } from '~/shared/lead-schema'
 import type { MessengerLeadPayload } from '~/shared/lead-schema'
-import { buildMessengerPipelineCard, createPipelineCard } from '../utils/keycrm'
+import { messengerLeadSchema } from '~/shared/lead-schema'
+import { updatePipelineCardLastTouch } from '../utils/keycrm'
+import { pendingLeadBucket, upsertClickLead } from '../utils/pending-leads'
 
 interface MessengerLeadResult {
   ok: true
   leadId: string
-  cardId: number | null
 }
 
-/** In-flight POSTs for the same lead id (double-click). Cleared when the job settles. */
 const inflightByLeadId = new Map<string, Promise<MessengerLeadResult>>()
-/** Successful card ids. Cap keeps memory bounded across a long-lived Node process. */
-const createdCardByLeadId = new Map<string, number>()
-const CREATED_CARD_CACHE_MAX = 500
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
@@ -27,67 +23,53 @@ export default defineEventHandler(async (event) => {
   }
 
   const payload = parsed.data
-  const knownCardId = createdCardByLeadId.get(payload.leadId)
-  if (knownCardId !== undefined) {
-    return { ok: true as const, leadId: payload.leadId, cardId: knownCardId }
-  }
-
-  const existing = inflightByLeadId.get(payload.leadId)
-  if (existing) {
-    return existing
-  }
-
-  const job = createMessengerCard(config.keycrmApiKey, payload)
-    .then((result) => {
-      if (result.cardId) {
-        rememberCreatedCard(payload.leadId, result.cardId)
-      }
-      return result
-    })
-    .finally(() => {
-      inflightByLeadId.delete(payload.leadId)
-    })
+  const previous = inflightByLeadId.get(payload.leadId) ?? Promise.resolve({ ok: true as const, leadId: payload.leadId })
+  // Keep the queue moving if a prior click failed; this request still must save.
+  const job = previous
+    .catch(() => ({ ok: true as const, leadId: payload.leadId }))
+    .then(() => storeMessengerClick(config.keycrmApiKey, payload))
 
   inflightByLeadId.set(payload.leadId, job)
-  return job
+  try {
+    return await job
+  }
+  finally {
+    if (inflightByLeadId.get(payload.leadId) === job) {
+      inflightByLeadId.delete(payload.leadId)
+    }
+  }
 })
 
-function rememberCreatedCard(leadId: string, cardId: number): void {
-  if (createdCardByLeadId.has(leadId)) {
-    createdCardByLeadId.delete(leadId)
-  }
-  createdCardByLeadId.set(leadId, cardId)
-  while (createdCardByLeadId.size > CREATED_CARD_CACHE_MAX) {
-    const oldest = createdCardByLeadId.keys().next().value
-    if (oldest === undefined) {
-      break
-    }
-    createdCardByLeadId.delete(oldest)
-  }
-}
-
-async function createMessengerCard(
+async function storeMessengerClick(
   apiKey: string | undefined,
   payload: MessengerLeadPayload,
 ): Promise<MessengerLeadResult> {
-  if (!apiKey) {
-    console.error('[messenger-leads] KeyCRM api key is missing', { leadId: payload.leadId })
-    return { ok: true, leadId: payload.leadId, cardId: null }
-  }
-
+  let applied: Awaited<ReturnType<typeof upsertClickLead>>
   try {
-    const result = await createPipelineCard(apiKey, buildMessengerPipelineCard(payload))
-    if (!result.ok) {
-      console.error('[messenger-leads] KeyCRM card was not created', {
-        leadId: payload.leadId,
-        status: result.status,
-      })
-      return { ok: true, leadId: payload.leadId, cardId: null }
-    }
-    return { ok: true, leadId: payload.leadId, cardId: result.id }
+    applied = await upsertClickLead(pendingLeadBucket(), payload)
   }
   catch (error) {
-    console.error('[messenger-leads] KeyCRM card was not created', { leadId: payload.leadId, error })
-    return { ok: true, leadId: payload.leadId, cardId: null }
+    console.error('[messenger-leads] pending lead was not saved', { leadId: payload.leadId, error })
+    throw createError({ statusCode: 502, statusMessage: 'Pending lead was not saved' })
   }
+
+  if (applied.pushLastTouch && applied.record.matchedCardId && apiKey) {
+    try {
+      const result = await updatePipelineCardLastTouch(apiKey, applied.record.matchedCardId, applied.record)
+      if (!result.ok) {
+        console.error('[messenger-leads] KeyCRM last touch was not updated', {
+          cardId: applied.record.matchedCardId,
+          status: result.status,
+        })
+      }
+    }
+    catch (error) {
+      console.error('[messenger-leads] KeyCRM last touch was not updated', {
+        cardId: applied.record.matchedCardId,
+        error,
+      })
+    }
+  }
+
+  return { ok: true, leadId: payload.leadId }
 }

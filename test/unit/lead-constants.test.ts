@@ -14,7 +14,7 @@ describe('lead-constants', () => {
     expect(LEAD_DEVICES).toEqual(['mobile', 'desktop'])
     expect(LOCALE_CODES).toEqual(['ua', 'ru'])
     expect(CONTACT_METHODS).toEqual(['telegram', 'whatsapp', 'viber', 'phone'])
-    expect(CONSENT_POLICY_VERSION).toBe('2026-11-24')
+    expect(CONSENT_POLICY_VERSION).toBe('2026-11-25')
     expect(LEAD_TURNSTILE_ACTION).toBe('lead_submit')
   })
 })

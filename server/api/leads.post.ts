@@ -3,6 +3,8 @@ import { leadSubmitSchema, parseLeadPhoneE164 } from '~/shared/lead-schema'
 import type { LeadSubmitPayload } from '~/shared/lead-schema'
 import { notifyLeadChannels } from '../utils/lead-notify'
 import { buildPipelineCard, createPipelineCard } from '../utils/keycrm'
+import { pendingLeadBucket, savePendingLead } from '../utils/pending-leads'
+import { pendingFromForm } from '~/shared/pending-lead'
 import { postStapeLead, stapeLeadEndpoint } from '../utils/stape-lead'
 import { LEAD_TURNSTILE_ACTION } from '~/shared/lead-constants'
 import { isStubTurnstileToken, verifyTurnstileToken } from '../utils/turnstile'
@@ -104,7 +106,20 @@ export default defineEventHandler(async (event) => {
   idempotencyCache.set(idemKey, { status: 200, body: response })
 
   if (!stubToken || isProduction) {
-    void postKeycrmCard(config.keycrmApiKey, { leadId, phoneE164, payload })
+    if (payload.contactMethod === 'phone') {
+      void postKeycrmCard(config.keycrmApiKey, { leadId, phoneE164, payload })
+    }
+    else {
+      const pending = pendingFromForm(leadId, payload, receivedAt)
+      if (pending) {
+        try {
+          await savePendingLead(pendingLeadBucket(), pending)
+        }
+        catch (error) {
+          console.error('[leads] pending form was not saved', { leadId, error })
+        }
+      }
+    }
     if (stapeLeadEndpoint(config.stapeTaggingUrl)) {
       void postStapeLead(config.stapeTaggingUrl, {
         leadId,

@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from 'node:crypto'
 import { deliverAdsEvent, type AdsCredentials, type AdsEventName } from '../../utils/ads-conversions'
+import { fillChatFromPending } from '../../utils/chat-card-lead'
 import { keycrmId, markAdsEventSent, readPipelineCard, type PipelineCardView } from '../../utils/keycrm'
 import { KEYCRM_PIPELINE_ID, KEYCRM_STATUS, KEYCRM_WEBHOOK_SECRET_HEADER } from '../../utils/keycrm-map'
 
@@ -7,6 +8,8 @@ interface LeadStatusNotice {
   cardId: number
   pipelineId?: number
   statusChangedAt?: string
+  sourceId?: number
+  createdAt?: string
 }
 
 export default defineEventHandler(async (event) => {
@@ -43,9 +46,24 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 502, statusMessage: 'KeyCRM card read failed' })
   }
 
-  const card = read.card
+  let card = read.card
   if (card.pipelineId !== null && card.pipelineId !== KEYCRM_PIPELINE_ID) {
     return { ok: true }
+  }
+
+  const filled = await fillChatFromPending(apiKey, card, notice)
+  if (filled === 'failed') {
+    throw createError({ statusCode: 502, statusMessage: 'KeyCRM update failed' })
+  }
+  if (filled === 'filled') {
+    const again = await readPipelineCard(apiKey, notice.cardId, marks)
+    if (!again.ok) {
+      if (!again.retry) {
+        return { ok: true }
+      }
+      throw createError({ statusCode: 502, statusMessage: 'KeyCRM card read failed' })
+    }
+    card = again.card
   }
 
   const eventName = adsEventForStatus(card.statusTitle)
@@ -104,19 +122,27 @@ function parseLeadStatusNotice(body: unknown): LeadStatusNotice | null {
     id?: unknown
     pipeline_id?: unknown
     status_changed_at?: unknown
+    source_id?: unknown
+    created_at?: unknown
   }
   const cardId = keycrmId(context.id)
   if (cardId === null) {
     return null
   }
   const pipelineId = keycrmId(context.pipeline_id)
+  const sourceId = keycrmId(context.source_id)
   const statusChangedAt = typeof context.status_changed_at === 'string' && context.status_changed_at.trim()
     ? context.status_changed_at.trim()
+    : undefined
+  const createdAt = typeof context.created_at === 'string' && context.created_at.trim()
+    ? context.created_at.trim()
     : undefined
   return {
     cardId,
     ...(pipelineId === null ? {} : { pipelineId }),
+    ...(sourceId === null ? {} : { sourceId }),
     ...(statusChangedAt ? { statusChangedAt } : {}),
+    ...(createdAt ? { createdAt } : {}),
   }
 }
 

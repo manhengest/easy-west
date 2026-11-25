@@ -436,4 +436,147 @@ describe('POST /api/keycrm/lead-status', () => {
     await expect(call(notice(new Date().toISOString()))).rejects.toMatchObject({ statusCode: 502 })
     expect(callsTo(fetchMock, KEYCRM_API_URL).some(entry => (entry[1] as RequestInit).method === 'PUT')).toBe(false)
   })
+
+  it('fills one pending telegram lead onto a new chat card', async () => {
+    const createdAt = '2026-11-25T06:16:50.000Z'
+    cardBody = formCard({
+      id: 518,
+      title: 'Чат з Anna',
+      source_id: 4,
+      status: { id: 1, title: 'Нова заявка' },
+      created_at: createdAt,
+      products_total: 0,
+      contact: {},
+      custom_fields: [],
+    })
+    const pending = new Map<string, unknown>([[
+      'abc1234567',
+      {
+        leadId: 'abc1234567',
+        kind: 'click',
+        channel: 'telegram',
+        lastTouchAt: '2026-11-25T06:10:00.000Z',
+        source: 'hero',
+        locale: 'ua',
+        device: 'mobile',
+        gclid: 'from-site',
+        utmSource: 'google',
+        landingPath: '/',
+      },
+    ]])
+    vi.stubGlobal('useStorage', () => ({
+      getItem: async (key: string) => pending.get(key) ?? null,
+      setItem: async (key: string, value: unknown) => { pending.set(key, value) },
+      getKeys: async () => [...pending.keys()],
+      removeItem: async (key: string) => { pending.delete(key) },
+    }))
+
+    const result = await call(notice(createdAt, { id: 518, source_id: 4, created_at: createdAt }))
+
+    expect(result).toEqual({ ok: true })
+    const put = jsonBody(callsTo(fetchMock, KEYCRM_API_URL).find(entry => (entry[1] as RequestInit).method === 'PUT')!)
+    expect(put.title).toBe('Лід 518')
+    expect(put.custom_fields).toEqual(expect.arrayContaining([
+      { uuid: KEYCRM_FIELDS.leadId, value: 'abc1234567' },
+      { uuid: KEYCRM_FIELDS.gclid, value: 'from-site' },
+    ]))
+    expect(pending.get('abc1234567')).toMatchObject({ matchedCardId: 518 })
+    expect(callsTo(fetchMock, 'google-analytics.com')).toHaveLength(0)
+  })
+
+  it('does nothing when two pending leads share the channel', async () => {
+    const createdAt = '2026-11-25T06:16:50.000Z'
+    cardBody = formCard({
+      id: 518,
+      source_id: 4,
+      status: { id: 1, title: 'Нова заявка' },
+      created_at: createdAt,
+      products_total: 0,
+      contact: {},
+      custom_fields: [],
+    })
+    const pending = new Map<string, unknown>()
+    for (const leadId of ['abc1234567', 'bbbbbbbbbb']) {
+      pending.set(leadId, {
+        leadId,
+        kind: 'click',
+        channel: 'telegram',
+        lastTouchAt: '2026-11-25T06:10:00.000Z',
+        source: 'hero',
+        locale: 'ua',
+        device: 'mobile',
+      })
+    }
+    vi.stubGlobal('useStorage', () => ({
+      getItem: async (key: string) => pending.get(key) ?? null,
+      setItem: async (key: string, value: unknown) => { pending.set(key, value) },
+      getKeys: async () => [...pending.keys()],
+      removeItem: async (key: string) => { pending.delete(key) },
+    }))
+
+    const result = await call(notice(createdAt, { id: 518, source_id: 4, created_at: createdAt }))
+
+    expect(result).toEqual({ ok: true })
+    expect(callsTo(fetchMock, KEYCRM_API_URL).some(entry => (entry[1] as RequestInit).method === 'PUT')).toBe(false)
+  })
+
+  it('fills a pasted lead id and then sends the qualified click', async () => {
+    const changedAt = new Date(Date.now() - 60_000).toISOString()
+    cardBody = formCard({
+      custom_fields: [{ uuid: KEYCRM_FIELDS.leadId, value: 'abc1234567' }],
+    })
+    const withClick = formCard({
+      custom_fields: [
+        { uuid: KEYCRM_FIELDS.leadId, value: 'abc1234567' },
+        { uuid: KEYCRM_FIELDS.channel, value: ['Telegram'] },
+        { uuid: KEYCRM_FIELDS.gclid, value: 'g-click' },
+        { uuid: KEYCRM_FIELDS.fbclid, value: 'fb-click' },
+        { uuid: KEYCRM_FIELDS.gaClientId, value: '111.222' },
+        { uuid: KEYCRM_FIELDS.fbp, value: 'fb.1.10.999' },
+      ],
+    })
+    const pending = new Map<string, unknown>([[
+      'abc1234567',
+      {
+        leadId: 'abc1234567',
+        kind: 'form',
+        channel: 'telegram',
+        lastTouchAt: '2026-11-25T06:00:00.000Z',
+        source: 'hero',
+        locale: 'ua',
+        device: 'desktop',
+        from: 'Kyiv',
+        to: 'Warsaw',
+        gclid: 'g-click',
+        fbclid: 'fb-click',
+        gaClientId: '111.222',
+        fbp: 'fb.1.10.999',
+      },
+    ]])
+    vi.stubGlobal('useStorage', () => ({
+      getItem: async (key: string) => pending.get(key) ?? null,
+      setItem: async (key: string, value: unknown) => { pending.set(key, value) },
+      getKeys: async () => [...pending.keys()],
+      removeItem: async (key: string) => { pending.delete(key) },
+    }))
+    const fetchImpl = fetchMock.getMockImplementation()
+    fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+      if (String(url).startsWith(KEYCRM_API_URL) && (init?.method ?? 'GET') === 'PUT' && cardBody !== withClick) {
+        cardBody = withClick
+      }
+      return fetchImpl!(url, init)
+    })
+
+    const result = await call(notice(changedAt))
+
+    expect(result).toEqual({ ok: true })
+    const puts = callsTo(fetchMock, KEYCRM_API_URL).filter(entry => (entry[1] as RequestInit).method === 'PUT')
+    expect(jsonBody(puts[0]!).title).toBe('Лід 148')
+    expect(jsonBody(puts[0]!).custom_fields).toEqual(expect.arrayContaining([
+      { uuid: KEYCRM_FIELDS.from, value: 'Kyiv' },
+      { uuid: KEYCRM_FIELDS.gclid, value: 'g-click' },
+    ]))
+    expect(callsTo(fetchMock, 'google-analytics.com')).toHaveLength(1)
+    expect(pending.get('abc1234567')).toMatchObject({ matchedCardId: 148 })
+  })
 })

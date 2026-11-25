@@ -14,17 +14,18 @@ export function useLeadMessenger() {
   const { links } = useContacts()
   const { trackClick } = useMessengerActions()
 
-  function buildMessage(fields: LeadMessageFields): string {
+  function buildMessage(fields: LeadMessageFields, leadId?: string): string {
     return buildLeadMessage(fields, {
       greeting: t('lead.message.greeting'),
       from: t('lead.message.from'),
       to: t('lead.message.to'),
       details: t('lead.message.details'),
-    })
+      leadNumber: t('lead.message.leadNumber'),
+    }, leadId)
   }
 
-  function deeplinkFor(method: ContactMethod, fields: LeadMessageFields): string {
-    const message = buildMessage(fields)
+  function deeplinkFor(method: ContactMethod, fields: LeadMessageFields, leadId?: string): string {
+    const message = buildMessage(fields, leadId)
     return buildMessengerDeeplink(method, message, {
       phone: links.value.phone,
       whatsapp: links.value.whatsapp,
@@ -36,13 +37,13 @@ export function useLeadMessenger() {
   function openMessenger(
     method: ContactMethod,
     fields: LeadMessageFields,
-    options?: { tab?: Window | null },
+    options?: { tab?: Window | null, leadId?: string },
   ): Promise<CustomSchemeHandoffResult> | undefined {
     if (!isMessengerContactMethod(method)) {
       return undefined
     }
 
-    const message = buildMessage(fields)
+    const message = buildMessage(fields, options?.leadId)
     const href = buildMessengerDeeplink(method, message, {
       phone: links.value.phone,
       whatsapp: links.value.whatsapp,

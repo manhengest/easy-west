@@ -5,8 +5,12 @@ Language for a relocation enquiry, from the website form through the sales pipel
 ## Language
 
 **Lead**:
-A request for a move through the website form, or one click on Telegram, WhatsApp, or Viber on the site per browser and channel within 30 days (another channel, or the same channel after 30 days, is another lead). A call or an email from the site is not a lead, and a message in the messenger does not start another lead.
-_Avoid_: order, замовлення
+A conversation in Telegram, WhatsApp, or Viber in the Переїзди pipeline, or a request through the website form. A call or an email from the site is not a lead.
+_Avoid_: order, замовлення, messenger click
+
+**Messenger click**:
+A tap on Telegram, WhatsApp, or Viber on the site. It is not a lead. It carries attribution for the chat card.
+_Avoid_: lead
 
 **Form consent**:
 The checkbox on the lead form. The form cannot be submitted without it. It covers processing that enquiry, including the measurement described in the privacy policy.
@@ -17,7 +21,7 @@ The choice on the cookie banner. It governs browser tags only. Rejecting it does
 _Avoid_: form consent
 
 **Qualified lead**:
-A lead on the pipeline card named `Лід {id}` that a manager has moved to «Кваліфіковано». A chat card is not a qualified lead.
+A lead on the pipeline card named `Лід {id}` that a manager has moved to «Кваліфіковано».
 _Avoid_: chat, запит на розрахунок
 
 **Booked move**:
@@ -52,4 +56,4 @@ _Avoid_: first touch
 A gclid, gbraid, wbraid, or fbclid on the landing URL. The GA client id (`_ga`) and Meta browser id (`_fbp`) travel with the lead for a later ads import.
 
 **Lead title**:
-The pipeline card name `Лід {id}`, where `{id}` is the KeyCRM card id. The route stays in the Звідки and Куди fields.
+`Лід {id}` on a pipeline card that has website data. `{id}` is the KeyCRM card id. A chat with no matching website data stays «Чат з …».

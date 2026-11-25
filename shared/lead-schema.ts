@@ -8,7 +8,6 @@ import {
   MESSENGER_LEAD_CHANNELS,
 } from './lead-constants'
 import { LEAD_ID_PATTERN } from './lead-id'
-import { isTaggedTouch } from './messenger-lead'
 import { normalizePhoneToE164 } from './phone'
 
 export const leadSourceSchema = z.enum(LEAD_SOURCES)
@@ -145,26 +144,6 @@ export const messengerLeadSchema = z.object({
 })
 
 export type MessengerLeadPayload = z.infer<typeof messengerLeadSchema>
-
-export const messengerLeadTouchSchema = z.object({
-  cardId: z.number().int().positive(),
-  leadId: z.string().regex(LEAD_ID_PATTERN),
-  utmSource: z.string().optional(),
-  utmMedium: z.string().optional(),
-  utmCampaign: z.string().optional(),
-  utmContent: z.string().optional(),
-  utmTerm: z.string().optional(),
-  gclid: z.string().optional(),
-  gbraid: z.string().optional(),
-  wbraid: z.string().optional(),
-  fbclid: z.string().optional(),
-}).superRefine((data, ctx) => {
-  if (!isTaggedTouch(data)) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'untagged', path: ['cardId'] })
-  }
-})
-
-export type MessengerLeadTouch = z.infer<typeof messengerLeadTouchSchema>
 
 export function parseLeadPhoneE164(payload: LeadSubmitPayload): string | null {
   if (payload.contactMethod !== 'phone') {

@@ -7,6 +7,7 @@ if (process.env.NODE_ENV !== 'test' && process.env.SKIP_ENV_VALIDATION !== 'true
 
 const siteUrl = process.env.NUXT_PUBLIC_SITE_URL!
 const outputDir = process.env.NUXT_OUTPUT_DIR
+const pendingLeadsDir = process.env.NUXT_PENDING_LEADS_DIR || '.data/pending-leads'
 
 const staticPages = ['', 'privacy', 'cookies', 'terms', 'accessibility'] as const
 const prerenderRoutes = [
@@ -170,6 +171,18 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: 'node-server',
+    experimental: {
+      tasks: true,
+    },
+    scheduledTasks: {
+      '* * * * *': ['pending-leads:flush'],
+    },
+    storage: {
+      pendingLeads: {
+        driver: 'fs',
+        base: pendingLeadsDir,
+      },
+    },
     // Deploy builds into a side directory so the live `.output` keeps serving
     // until the new build is swapped in.
     ...(outputDir

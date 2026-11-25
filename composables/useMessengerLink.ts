@@ -1,7 +1,6 @@
 import { useMediaQuery } from '@vueuse/core'
 import type { MessengerChannel } from '~/composables/useContacts'
 import type { LeadSource, MessengerLeadChannel } from '~/shared/lead-constants'
-import type { AttributionTouch } from '~/shared/lead-attribution'
 import { watchCustomSchemeHandoff } from '~/shared/custom-scheme-handoff'
 import { openExternalHref } from '~/shared/open-external'
 import {
@@ -13,10 +12,7 @@ import {
   MESSENGER_LEAD_COOKIE,
   MESSENGER_LEAD_MAX_AGE,
   decideMessengerClick,
-  messengerTouchKey,
   normalizeMessengerLeadStore,
-  withCardId,
-  withTouchKey,
   type MessengerLeadStore,
 } from '~/shared/messenger-lead'
 
@@ -25,7 +21,6 @@ const REVEAL_PROTECTED_CHANNELS = new Set<MessengerChannel>(['whatsapp', 'telegr
 interface MessengerLeadApiResponse {
   ok: true
   leadId: string
-  cardId: number | null
 }
 
 export function isRevealProtectedChannel(channel: MessengerChannel): boolean {
@@ -56,26 +51,12 @@ function filledAttribution(fields: Record<string, string>): Record<string, strin
   return body
 }
 
-function lastTouchBody(touch: AttributionTouch | undefined): Record<string, string> {
-  return filledAttribution({
-    utmSource: touch?.utmSource ?? '',
-    utmMedium: touch?.utmMedium ?? '',
-    utmCampaign: touch?.utmCampaign ?? '',
-    utmContent: touch?.utmContent ?? '',
-    utmTerm: touch?.utmTerm ?? '',
-    gclid: touch?.gclid ?? '',
-    gbraid: touch?.gbraid ?? '',
-    wbraid: touch?.wbraid ?? '',
-    fbclid: touch?.fbclid ?? '',
-  })
-}
-
 export function useMessengerActions() {
   const { hrefFor, links } = useContacts()
   const { pushEvent } = useGtm()
   const { showViberFallbackToast } = useViberFallbackToast()
-  const { locale } = useI18n()
-  const { hiddenFields, attribution } = useLeadAttribution()
+  const { locale, t } = useI18n()
+  const { hiddenFields } = useLeadAttribution()
   const isMobile = useMediaQuery('(max-width: 767px)')
   const cookie = useCookie<MessengerLeadStore | string | null>(MESSENGER_LEAD_COOKIE, {
     path: '/',
@@ -98,25 +79,6 @@ export function useMessengerActions() {
     })
   }
 
-  function rememberCard(channel: MessengerLeadChannel, leadId: string, cardId: number) {
-    const next = withCardId(normalizeMessengerLeadStore(cookie.value), channel, leadId, cardId)
-    if (next) {
-      cookie.value = next
-    }
-  }
-
-  function rememberTouch(channel: MessengerLeadChannel, leadId: string, touch: AttributionTouch | undefined) {
-    const next = withTouchKey(
-      normalizeMessengerLeadStore(cookie.value),
-      channel,
-      leadId,
-      messengerTouchKey(touch),
-    )
-    if (next) {
-      cookie.value = next
-    }
-  }
-
   function postMessengerLead(
     leadId: string,
     channel: MessengerLeadChannel,
@@ -135,30 +97,8 @@ export function useMessengerActions() {
     void $fetch<MessengerLeadApiResponse>('/api/messenger-leads', {
       method: 'POST',
       body,
-    }).then((response) => {
-      if (response.cardId) {
-        rememberCard(channel, leadId, response.cardId)
-      }
     }).catch((error: unknown) => {
-      console.error('[messenger-leads] card was not created', { leadId, channel, error })
-    })
-  }
-
-  function putLastTouch(cardId: number, channel: MessengerLeadChannel, leadId: string) {
-    const touch = attribution.value?.last
-    const body = {
-      cardId,
-      leadId,
-      ...lastTouchBody(touch),
-    }
-
-    void $fetch('/api/messenger-leads', {
-      method: 'PUT',
-      body,
-    }).then(() => {
-      rememberTouch(channel, leadId, touch)
-    }).catch((error: unknown) => {
-      console.error('[messenger-leads] last touch was not updated', { leadId, cardId, error })
+      console.error('[messenger-leads] click was not saved', { leadId, channel, error })
     })
   }
 
@@ -175,13 +115,12 @@ export function useMessengerActions() {
       store: normalizeMessengerLeadStore(cookie.value),
       channel,
       now: Date.now(),
-      lastTouch: attribution.value?.last,
     })
     if (decision.writeStore) {
       cookie.value = decision.store
     }
 
-    const message = buildMessengerClickMessage(decision.leadId, channel)
+    const message = buildMessengerClickMessage(decision.leadId, t('lead.message.leadNumber'))
     const href = buildMessengerDeeplink(channel, message, {
       phone: links.value.phone,
       whatsapp: links.value.whatsapp,
@@ -190,14 +129,7 @@ export function useMessengerActions() {
     })
     openExternalHref(href)
     watchViber(channel)
-
-    if (decision.kind === 'mint' || decision.retryCreate) {
-      postMessengerLead(decision.leadId, channel, source)
-      return
-    }
-    if (decision.putLastTouch && decision.cardId) {
-      putLastTouch(decision.cardId, channel, decision.leadId)
-    }
+    postMessengerLead(decision.leadId, channel, source)
   }
 
   return {

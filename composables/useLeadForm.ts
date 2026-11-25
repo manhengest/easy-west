@@ -197,7 +197,7 @@ export function useLeadForm(
             to: values.to,
             details: values.details,
           },
-          { tab: messengerTab },
+          { tab: messengerTab, leadId: res.leadId },
         )
         viberHandoff.value = handoff ?? null
         messengerTab = null

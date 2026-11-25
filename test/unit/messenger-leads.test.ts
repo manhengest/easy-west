@@ -1,34 +1,44 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { KEYCRM_FIELDS } from '~/server/utils/keycrm-map'
+import type { PendingLead } from '~/shared/pending-lead'
 
-const createPipelineCard = vi.fn()
 const updatePipelineCardLastTouch = vi.fn()
-const readPipelineCardLeadId = vi.fn()
 const readBody = vi.fn()
 const useRuntimeConfig = vi.fn()
-const fetchMock = vi.fn()
 
 vi.mock('~/server/utils/keycrm', async (importOriginal) => {
   const actual = await importOriginal<typeof import('~/server/utils/keycrm')>()
   return {
     ...actual,
-    createPipelineCard: (...args: unknown[]) => createPipelineCard(...args),
     updatePipelineCardLastTouch: (...args: unknown[]) => updatePipelineCardLastTouch(...args),
-    readPipelineCardLeadId: (...args: unknown[]) => readPipelineCardLeadId(...args),
   }
 })
 
 vi.stubGlobal('readBody', readBody)
 vi.stubGlobal('useRuntimeConfig', useRuntimeConfig)
-vi.stubGlobal('fetch', fetchMock)
 vi.stubGlobal('defineEventHandler', (fn: (event: unknown) => unknown) => fn)
 vi.stubGlobal('createError', (opts: { statusCode: number, statusMessage: string, data?: unknown }) => {
   const error = Object.assign(new Error(opts.statusMessage), opts)
   return error
 })
 
+const pending = new Map<string, PendingLead>()
+
+function bucket() {
+  return {
+    getItem: async (key: string) => pending.get(key) ?? null,
+    setItem: async (key: string, value: PendingLead) => {
+      pending.set(key, value)
+    },
+    getKeys: async () => [...pending.keys()],
+    removeItem: async (key: string) => {
+      pending.delete(key)
+    },
+  }
+}
+
+vi.stubGlobal('useStorage', () => bucket())
+
 const { default: postLead } = await import('~/server/api/messenger-leads.post')
-const { default: putTouch } = await import('~/server/api/messenger-leads.put')
 
 function clickBody(overrides: Record<string, unknown> = {}) {
   return {
@@ -55,149 +65,99 @@ async function post(body: unknown, apiKey: string | undefined = 'secret') {
   return postLead({} as never)
 }
 
-async function put(body: unknown, apiKey: string | undefined = 'secret') {
-  readBody.mockResolvedValue(body)
-  useRuntimeConfig.mockReturnValue({ keycrmApiKey: apiKey })
-  return putTouch({} as never)
-}
-
 describe('POST /api/messenger-leads', () => {
   beforeEach(() => {
-    createPipelineCard.mockReset()
-    fetchMock.mockReset()
-    createPipelineCard.mockResolvedValue({ ok: true, id: 148 })
+    pending.clear()
+    updatePipelineCardLastTouch.mockReset()
+    updatePipelineCardLastTouch.mockResolvedValue({ ok: true, id: 15 })
+    vi.stubGlobal('useStorage', () => bucket())
   })
 
   it('returns 400 for a phone click', async () => {
     await expect(post(clickBody({ channel: 'phone', leadId: 'bbbbbbbbbb' }))).rejects.toMatchObject({
       statusCode: 400,
     })
-    expect(createPipelineCard).not.toHaveBeenCalled()
+    expect(pending.size).toBe(0)
   })
 
-  it('creates one card for a lead id and returns that card id', async () => {
+  it('stores the click and does not create a card', async () => {
     const body = clickBody({ leadId: 'cccccccccc' })
-    let resolveCard: (value: { ok: true, id: number }) => void = () => {}
-    createPipelineCard.mockReturnValue(new Promise((resolve) => {
-      resolveCard = resolve
-    }))
+    await expect(post(body)).resolves.toEqual({ ok: true, leadId: 'cccccccccc' })
+    await expect(post(body)).resolves.toEqual({ ok: true, leadId: 'cccccccccc' })
 
-    const first = post(body)
-    const second = post(body)
-    resolveCard({ ok: true, id: 148 })
-
-    await expect(first).resolves.toEqual({ ok: true, leadId: 'cccccccccc', cardId: 148 })
-    await expect(second).resolves.toEqual({ ok: true, leadId: 'cccccccccc', cardId: 148 })
-    await expect(post(body)).resolves.toEqual({ ok: true, leadId: 'cccccccccc', cardId: 148 })
-    expect(createPipelineCard).toHaveBeenCalledTimes(1)
-    expect(fetchMock).not.toHaveBeenCalled()
-
-    const card = createPipelineCard.mock.calls[0]?.[1] as {
-      contact: { phone?: string }
-      manager_comment: string
-      custom_fields: { uuid: string, value: string | string[] }[]
-    }
-    expect(createPipelineCard.mock.calls[0]?.[0]).toBe('secret')
-    expect(card.contact).toEqual({ full_name: 'Заявка з сайту' })
-    expect(card.contact.phone).toBeUndefined()
-    expect(card.manager_comment).toContain('Кнопка: Футер')
-    expect(card.custom_fields).toEqual(expect.arrayContaining([
-      { uuid: KEYCRM_FIELDS.leadId, value: 'cccccccccc' },
-      { uuid: KEYCRM_FIELDS.channel, value: ['WhatsApp'] },
-      { uuid: KEYCRM_FIELDS.gclid, value: 'last-click' },
-      { uuid: KEYCRM_FIELDS.gaClientId, value: '111.222' },
-    ]))
-    expect(card.custom_fields.some(field => field.uuid === KEYCRM_FIELDS.from)).toBe(false)
-    expect(card.custom_fields.some(field => field.uuid === KEYCRM_FIELDS.to)).toBe(false)
+    expect(updatePipelineCardLastTouch).not.toHaveBeenCalled()
+    expect(pending.get('cccccccccc')).toMatchObject({
+      kind: 'click',
+      channel: 'whatsapp',
+      leadId: 'cccccccccc',
+      gclid: 'last-click',
+      firstUtmSource: 'facebook',
+      gaClientId: '111.222',
+    })
+    expect(pending.get('cccccccccc')?.from).toBeUndefined()
   })
 
-  it('retries KeyCRM when the first create failed', async () => {
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    createPipelineCard
-      .mockResolvedValueOnce({ ok: false, status: 500 })
-      .mockResolvedValueOnce({ ok: true, id: 201 })
+  it('moves the window on a repeat click and keeps an untagged visit off the card', async () => {
+    await post(clickBody({ leadId: 'eeeeeeeeee' }))
+    const firstTouch = pending.get('eeeeeeeeee')?.lastTouchAt
+    await new Promise(resolve => setTimeout(resolve, 5))
 
-    const body = clickBody({ leadId: 'dddddddddd' })
-    await expect(post(body)).resolves.toEqual({ ok: true, leadId: 'dddddddddd', cardId: null })
-    await expect(post(body)).resolves.toEqual({ ok: true, leadId: 'dddddddddd', cardId: 201 })
-    expect(createPipelineCard).toHaveBeenCalledTimes(2)
-    errorSpy.mockRestore()
-  })
-})
-
-describe('PUT /api/messenger-leads', () => {
-  beforeEach(() => {
-    updatePipelineCardLastTouch.mockReset()
-    readPipelineCardLeadId.mockReset()
-    updatePipelineCardLastTouch.mockResolvedValue({ ok: true, id: 15 })
-    readPipelineCardLeadId.mockResolvedValue({ ok: true, leadId: 'abc1234567' })
-  })
-
-  it('rejects a direct visit before it can overwrite the card', async () => {
-    await expect(put({
-      cardId: 15,
-      leadId: 'abc1234567',
+    await post(clickBody({
+      leadId: 'eeeeeeeeee',
       utmSource: 'direct',
       utmMedium: 'direct',
-    })).rejects.toMatchObject({ statusCode: 400 })
-    expect(readPipelineCardLeadId).not.toHaveBeenCalled()
+      gclid: undefined,
+    }))
+
+    expect(pending.get('eeeeeeeeee')?.gclid).toBe('last-click')
+    expect(pending.get('eeeeeeeeee')?.lastTouchAt).not.toBe(firstTouch)
     expect(updatePipelineCardLastTouch).not.toHaveBeenCalled()
   })
 
-  it('rejects a put without the lead id', async () => {
-    await expect(put({
-      cardId: 15,
-      utmSource: 'facebook',
-      utmMedium: 'cpc',
-      fbclid: 'click-b',
-    })).rejects.toMatchObject({ statusCode: 400 })
-    expect(updatePipelineCardLastTouch).not.toHaveBeenCalled()
-  })
+  it('returns 502 when the pending store write fails', async () => {
+    vi.stubGlobal('useStorage', () => ({
+      getItem: async () => null,
+      setItem: async () => {
+        throw new Error('disk full')
+      },
+      getKeys: async () => [],
+      removeItem: async () => undefined,
+    }))
 
-  it('refuses a card that belongs to another lead', async () => {
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    readPipelineCardLeadId.mockResolvedValue({ ok: true, leadId: 'otherlead00' })
-
-    await expect(put({
-      cardId: 15,
-      leadId: 'abc1234567',
-      utmSource: 'facebook',
-      utmMedium: 'cpc',
-      fbclid: 'click-b',
-    })).rejects.toMatchObject({ statusCode: 403 })
-    expect(updatePipelineCardLastTouch).not.toHaveBeenCalled()
-    errorSpy.mockRestore()
-  })
-
-  it('puts the tagged last touch onto the card', async () => {
-    await expect(put({
-      cardId: 15,
-      leadId: 'abc1234567',
-      utmSource: 'facebook',
-      utmMedium: 'cpc',
-      fbclid: 'click-b',
-      firstUtmSource: 'google',
-    })).resolves.toEqual({ ok: true })
-
-    expect(readPipelineCardLeadId).toHaveBeenCalledWith('secret', 15)
-    expect(updatePipelineCardLastTouch).toHaveBeenCalledWith('secret', 15, {
-      cardId: 15,
-      leadId: 'abc1234567',
-      utmSource: 'facebook',
-      utmMedium: 'cpc',
-      fbclid: 'click-b',
+    await expect(post(clickBody({ leadId: 'ffffffff01' }))).rejects.toMatchObject({
+      statusCode: 502,
+      statusMessage: 'Pending lead was not saved',
     })
   })
 
-  it('logs a KeyCRM failure and returns 502', async () => {
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    updatePipelineCardLastTouch.mockResolvedValue({ ok: false, status: 422 })
-
-    await expect(put({
-      cardId: 15,
+  it('puts a new tagged last touch onto the matched chat card', async () => {
+    pending.set('abc1234567', {
       leadId: 'abc1234567',
-      gclid: 'click-c',
-    })).rejects.toMatchObject({ statusCode: 502 })
-    errorSpy.mockRestore()
+      kind: 'click',
+      channel: 'whatsapp',
+      lastTouchAt: '2026-11-25T06:00:00.000Z',
+      source: 'footer',
+      locale: 'ua',
+      device: 'desktop',
+      utmSource: 'google',
+      utmMedium: 'cpc',
+      gclid: 'last-click',
+      matchedCardId: 15,
+    })
+
+    await expect(post(clickBody({
+      utmSource: 'facebook',
+      utmMedium: 'cpc',
+      gclid: undefined,
+      fbclid: 'click-b',
+    }))).resolves.toEqual({ ok: true, leadId: 'abc1234567' })
+
+    expect(updatePipelineCardLastTouch).toHaveBeenCalledWith('secret', 15, expect.objectContaining({
+      fbclid: 'click-b',
+      utmSource: 'facebook',
+      matchedCardId: 15,
+    }))
+    expect(pending.get('abc1234567')?.gclid).toBeUndefined()
+    expect(pending.get('abc1234567')?.fbclid).toBe('click-b')
   })
 })

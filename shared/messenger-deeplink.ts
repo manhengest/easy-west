@@ -11,6 +11,7 @@ export interface LeadMessageLines {
   from: string
   to: string
   details: string
+  leadNumber: string
 }
 
 export interface ContactLinkSources {
@@ -64,9 +65,14 @@ function extractViberNumber(viberUrl: string, fallbackPhone: string): string {
   return extractDigits(fallbackPhone)
 }
 
+export function leadNumberLine(label: string, leadId: string): string {
+  return `${label} ${leadId}`
+}
+
 export function buildLeadMessage(
   fields: LeadMessageFields,
   lines: LeadMessageLines,
+  leadId?: string,
 ): string {
   const parts = [
     lines.greeting,
@@ -77,6 +83,9 @@ export function buildLeadMessage(
   const details = fields.details?.trim()
   if (details) {
     parts.push(`${lines.details} ${details}`)
+  }
+  if (leadId) {
+    parts.push(leadNumberLine(lines.leadNumber, leadId))
   }
 
   return parts.join('\n')
@@ -114,14 +123,8 @@ export function buildMessengerDeeplink(
   }
 }
 
-const CLICK_CHANNEL_LABEL: Record<MessengerLeadChannel, string> = {
-  telegram: 'Telegram',
-  whatsapp: 'WhatsApp',
-  viber: 'Viber',
-}
-
-export function buildMessengerClickMessage(leadId: string, channel: MessengerLeadChannel): string {
-  return `${leadId}\n${CLICK_CHANNEL_LABEL[channel]}`
+export function buildMessengerClickMessage(leadId: string, leadNumberLabel: string): string {
+  return leadNumberLine(leadNumberLabel, leadId)
 }
 
 export function isMessengerContactMethod(method: ContactMethod): method is MessengerLeadChannel {

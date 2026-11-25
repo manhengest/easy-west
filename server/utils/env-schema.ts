@@ -30,6 +30,7 @@ export const serverEnvSchema = z.object({
   NUXT_PUBLIC_GTM_ID: z.string().optional(),
   NUXT_PROD_LEADS_TO_EMAIL: z.string().email().optional(),
   NUXT_DEPLOY_ENV: deployEnvSchema.default('development'),
+  NUXT_PENDING_LEADS_DIR: z.string().min(1).optional(),
 })
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>
@@ -50,8 +51,22 @@ function assertStagingLeadsEmail(env: ServerEnv): void {
   }
 }
 
+function assertPendingLeadsDir(env: ServerEnv): void {
+  const dir = env.NUXT_PENDING_LEADS_DIR
+  if (dir?.split(/[/\\]/).includes('.output')) {
+    throw new Error('NUXT_PENDING_LEADS_DIR must sit outside .output.')
+  }
+  if (!isProductionDeploy(env)) {
+    return
+  }
+  if (!dir || !dir.startsWith('/')) {
+    throw new Error('NUXT_PENDING_LEADS_DIR must be an absolute path in production.')
+  }
+}
+
 export function parseServerEnv(raw: NodeJS.ProcessEnv): ServerEnv {
   const parsed = serverEnvSchema.parse(raw)
   assertStagingLeadsEmail(parsed)
+  assertPendingLeadsDir(parsed)
   return parsed
 }

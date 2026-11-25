@@ -11,6 +11,7 @@ const lines = {
   from: 'From:',
   to: 'To:',
   details: 'Details:',
+  leadNumber: 'Номер заявки:',
 }
 
 const links = {
@@ -29,6 +30,15 @@ describe('buildLeadMessage', () => {
     expect(message).toBe('Hello\nFrom: Kyiv\nTo: Warsaw\nDetails: Fragile items')
   })
 
+  it('adds the lead number as the last line when the server has minted one', () => {
+    const message = buildLeadMessage(
+      { from: 'Kyiv', to: 'Warsaw' },
+      lines,
+      'abc1234567',
+    )
+    expect(message).toBe('Hello\nFrom: Kyiv\nTo: Warsaw\nНомер заявки: abc1234567')
+  })
+
   it('omits empty details', () => {
     const message = buildLeadMessage({ from: 'Kyiv', to: 'Warsaw' }, lines)
     expect(message).toBe('Hello\nFrom: Kyiv\nTo: Warsaw')
@@ -36,20 +46,19 @@ describe('buildLeadMessage', () => {
 })
 
 describe('buildMessengerClickMessage', () => {
-  it('puts the lead id and channel into the chat draft, without a route', () => {
-    const message = buildMessengerClickMessage('abc1234567', 'whatsapp')
-    expect(message).toBe('abc1234567\nWhatsApp')
+  it('puts the lead number into the chat draft, without a route', () => {
+    const message = buildMessengerClickMessage('abc1234567', 'Номер заявки:')
+    expect(message).toBe('Номер заявки: abc1234567')
 
     const href = buildMessengerDeeplink('whatsapp', message, links)
     expect(href).toBe(`https://wa.me/380933218899?text=${encodeURIComponent(message)}`)
     expect(href).not.toContain('Kyiv')
   })
 
-  it('puts the same lead id into the Telegram text and the Viber draft', () => {
-    const message = buildMessengerClickMessage('abc1234567', 'viber')
-    expect(message).toBe('abc1234567\nViber')
-    expect(buildMessengerDeeplink('telegram', buildMessengerClickMessage('abc1234567', 'telegram'), links))
-      .toContain(`text=${encodeURIComponent('abc1234567\nTelegram')}`)
+  it('puts the same lead number into the Telegram text and the Viber draft', () => {
+    const message = buildMessengerClickMessage('abc1234567', 'Номер заявки:')
+    expect(buildMessengerDeeplink('telegram', message, links))
+      .toContain(`text=${encodeURIComponent(message)}`)
     expect(buildMessengerDeeplink('viber', message, links))
       .toContain(`draft=${encodeURIComponent(message)}`)
   })

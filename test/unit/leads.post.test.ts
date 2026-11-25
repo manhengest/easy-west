@@ -69,8 +69,21 @@ async function callHandler(body: unknown, configOverrides: Record<string, unknow
   return handler({} as never)
 }
 
+const pendingLeads = new Map<string, { kind?: string, channel?: string, from?: string }>()
+
 describe('POST /api/leads handler', () => {
   beforeEach(() => {
+    pendingLeads.clear()
+    vi.stubGlobal('useStorage', () => ({
+      getItem: async (key: string) => pendingLeads.get(key) ?? null,
+      setItem: async (key: string, value: { kind?: string, channel?: string, from?: string }) => {
+        pendingLeads.set(key, value)
+      },
+      getKeys: async () => [...pendingLeads.keys()],
+      removeItem: async (key: string) => {
+        pendingLeads.delete(key)
+      },
+    }))
     verifyTurnstileToken.mockReset()
     notifyLeadChannels.mockReset()
     createPipelineCard.mockReset()
@@ -153,8 +166,8 @@ describe('POST /api/leads handler', () => {
     expect(res).toMatchObject({ ok: true })
   })
 
-  it('creates a KeyCRM card after a successful notify', async () => {
-    const body = validLeadSubmitBody({ turnstileToken: 'real-token' })
+  it('creates a KeyCRM card after a successful phone notify', async () => {
+    const body = validPhoneLeadBody({ turnstileToken: 'real-token' })
     await callHandler(body, { keycrmApiKey: 'crm-key' })
 
     expect(createPipelineCard).toHaveBeenCalledTimes(1)
@@ -164,7 +177,7 @@ describe('POST /api/leads handler', () => {
   it('returns 200 when KeyCRM fails', async () => {
     createPipelineCard.mockResolvedValue({ ok: false, status: 500 })
     const res = await callHandler(
-      validLeadSubmitBody({ turnstileToken: 'real-token' }),
+      validPhoneLeadBody({ turnstileToken: 'real-token' }),
       { keycrmApiKey: 'crm-key' },
     )
 
@@ -174,7 +187,7 @@ describe('POST /api/leads handler', () => {
   it('returns 200 when KeyCRM throws', async () => {
     createPipelineCard.mockRejectedValue(new Error('network'))
     const res = await callHandler(
-      validLeadSubmitBody({ turnstileToken: 'real-token' }),
+      validPhoneLeadBody({ turnstileToken: 'real-token' }),
       { keycrmApiKey: 'crm-key' },
     )
 
@@ -192,7 +205,7 @@ describe('POST /api/leads handler', () => {
   })
 
   it('skips KeyCRM when the API key is empty', async () => {
-    await callHandler(validLeadSubmitBody({ turnstileToken: 'real-token' }), { keycrmApiKey: '' })
+    await callHandler(validPhoneLeadBody({ turnstileToken: 'real-token' }), { keycrmApiKey: '' })
     expect(createPipelineCard).not.toHaveBeenCalled()
   })
 
@@ -204,8 +217,20 @@ describe('POST /api/leads handler', () => {
     expect(createPipelineCard).not.toHaveBeenCalled()
   })
 
-  it('does not create a second card when the submit is replayed', async () => {
+  it('saves a messenger form and does not create a card', async () => {
     const body = validLeadSubmitBody({ turnstileToken: 'real-token' })
+    const res = await callHandler(body, { keycrmApiKey: 'crm-key' }) as { leadId: string }
+
+    expect(createPipelineCard).not.toHaveBeenCalled()
+    expect(pendingLeads.get(res.leadId)).toMatchObject({
+      kind: 'form',
+      channel: 'telegram',
+      from: 'Kyiv',
+    })
+  })
+
+  it('does not create a second card when the submit is replayed', async () => {
+    const body = validPhoneLeadBody({ turnstileToken: 'real-token' })
     await callHandler(body, { keycrmApiKey: 'crm-key' })
     await callHandler(body, { keycrmApiKey: 'crm-key' })
     expect(createPipelineCard).toHaveBeenCalledTimes(1)
@@ -216,7 +241,7 @@ describe('POST /api/leads handler', () => {
     createPipelineCard.mockImplementation(() => new Promise((resolve) => {
       release = resolve
     }))
-    const body = validLeadSubmitBody({ turnstileToken: 'real-token' })
+    const body = validPhoneLeadBody({ turnstileToken: 'real-token' })
 
     const res = await Promise.race([
       callHandler(body, { keycrmApiKey: 'crm-key' }),

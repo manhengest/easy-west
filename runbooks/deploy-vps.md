@@ -23,6 +23,7 @@ docker run --env-file .env -p 3000:3000 easy-west
 | Variable | Purpose |
 |----------|---------|
 | `NUXT_DEPLOY_ENV` | `staging` \| `production` — staging guard for leads email |
+| `NUXT_PENDING_LEADS_DIR` | Absolute path outside `.output` for unmatched clicks and forms. Required in production |
 | `HOST` / `PORT` | Nitro listen (default `0.0.0.0:3000`) |
 | `NUXT_*` | See `.env.example` |
 

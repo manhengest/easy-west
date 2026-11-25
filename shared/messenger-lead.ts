@@ -1,4 +1,3 @@
-import type { AttributionTouch } from './lead-attribution'
 import type { MessengerLeadChannel } from './lead-constants'
 import { MESSENGER_LEAD_CHANNELS } from './lead-constants'
 import { LEAD_ID_PATTERN, mintLeadId } from './lead-id'
@@ -10,8 +9,6 @@ export const MESSENGER_LEAD_TTL_MS = MESSENGER_LEAD_MAX_AGE * 1000
 export interface MessengerChannelLead {
   leadId: string
   clickedAt: string
-  cardId?: number
-  touchKey?: string
 }
 
 export type MessengerLeadStore = Partial<Record<MessengerLeadChannel, MessengerChannelLead>>
@@ -69,16 +66,6 @@ export function messengerTouchKey(touch: TagFields | undefined): string {
   ].join('\0')
 }
 
-function parseCardId(value: unknown): number | undefined {
-  if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
-    return value
-  }
-  if (typeof value === 'string' && /^[1-9]\d*$/.test(value)) {
-    return Number(value)
-  }
-  return undefined
-}
-
 function parseChannelLead(value: unknown): MessengerChannelLead | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return null
@@ -92,18 +79,10 @@ function parseChannelLead(value: unknown): MessengerChannelLead | null {
     return null
   }
 
-  const lead: MessengerChannelLead = {
+  return {
     leadId: record.leadId,
     clickedAt: record.clickedAt,
   }
-  const cardId = parseCardId(record.cardId)
-  if (cardId !== undefined) {
-    lead.cardId = cardId
-  }
-  if (typeof record.touchKey === 'string') {
-    lead.touchKey = record.touchKey
-  }
-  return lead
 }
 
 export function normalizeMessengerLeadStore(raw: unknown): MessengerLeadStore {
@@ -140,10 +119,6 @@ function isFresh(clickedAt: string, now: number): boolean {
 export interface MessengerClickDecision {
   kind: 'mint' | 'reopen'
   leadId: string
-  cardId?: number
-  putLastTouch: boolean
-  /** Same lead, KeyCRM card still missing — POST again, do not mint a second lead. */
-  retryCreate: boolean
   store: MessengerLeadStore
   writeStore: boolean
 }
@@ -152,77 +127,31 @@ export function decideMessengerClick(input: {
   store: MessengerLeadStore | null
   channel: MessengerLeadChannel
   now: number
-  lastTouch?: AttributionTouch
   mintId?: () => string
 }): MessengerClickDecision {
   const store = input.store ?? {}
   const existing = store[input.channel]
-  const key = messengerTouchKey(input.lastTouch)
 
   if (existing && isFresh(existing.clickedAt, input.now)) {
-    const putLastTouch = existing.cardId !== undefined
-      && isTaggedTouch(input.lastTouch)
-      && key !== (existing.touchKey ?? '')
-    const decision: MessengerClickDecision = {
+    return {
       kind: 'reopen',
       leadId: existing.leadId,
-      putLastTouch,
-      retryCreate: existing.cardId === undefined,
       store,
       writeStore: false,
     }
-    if (existing.cardId !== undefined) {
-      decision.cardId = existing.cardId
-    }
-    return decision
   }
 
   const leadId = (input.mintId ?? mintLeadId)()
   return {
     kind: 'mint',
     leadId,
-    putLastTouch: false,
-    retryCreate: false,
     writeStore: true,
     store: {
       ...store,
       [input.channel]: {
         leadId,
         clickedAt: new Date(input.now).toISOString(),
-        touchKey: key,
       },
     },
-  }
-}
-
-export function withCardId(
-  store: MessengerLeadStore,
-  channel: MessengerLeadChannel,
-  leadId: string,
-  cardId: number,
-): MessengerLeadStore | null {
-  const current = store[channel]
-  if (!current || current.leadId !== leadId) {
-    return null
-  }
-  return {
-    ...store,
-    [channel]: { ...current, cardId },
-  }
-}
-
-export function withTouchKey(
-  store: MessengerLeadStore,
-  channel: MessengerLeadChannel,
-  leadId: string,
-  touchKey: string,
-): MessengerLeadStore | null {
-  const current = store[channel]
-  if (!current || current.leadId !== leadId) {
-    return null
-  }
-  return {
-    ...store,
-    [channel]: { ...current, touchKey },
   }
 }

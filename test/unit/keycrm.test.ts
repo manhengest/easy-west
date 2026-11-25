@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { buildLastTouchUpdate, buildMessengerPipelineCard, buildPipelineCard, createPipelineCard, leadCardTitle, readPipelineCardLeadId, updatePipelineCardLastTouch } from '~/server/utils/keycrm'
+import { buildChatCardFill, buildLastTouchUpdate, buildMessengerPipelineCard, buildPipelineCard, createPipelineCard, leadCardTitle, updatePipelineCardLastTouch } from '~/server/utils/keycrm'
 import { KEYCRM_API_URL, KEYCRM_FIELDS } from '~/server/utils/keycrm-map'
 import { validLeadSubmitBody, validPhoneLeadBody } from '../fixtures/leads'
 
@@ -55,6 +55,7 @@ describe('buildPipelineCard', () => {
       { uuid: KEYCRM_FIELDS.firstPage, value: '/start' },
       { uuid: KEYCRM_FIELDS.firstGclid, value: 'first-click' },
       { uuid: KEYCRM_FIELDS.gclid, value: 'last-click' },
+      { uuid: KEYCRM_FIELDS.lastSource, value: 'google' },
       { uuid: KEYCRM_FIELDS.gaClientId, value: '111.222' },
       { uuid: KEYCRM_FIELDS.fbp, value: 'fb.1.10.999' },
     ]))
@@ -115,6 +116,7 @@ describe('buildMessengerPipelineCard', () => {
       { uuid: KEYCRM_FIELDS.firstVisit, value: '2026-10-01T00:00:00.000Z' },
       { uuid: KEYCRM_FIELDS.firstPage, value: '/start' },
       { uuid: KEYCRM_FIELDS.gclid, value: 'last-click' },
+      { uuid: KEYCRM_FIELDS.lastSource, value: 'google' },
       { uuid: KEYCRM_FIELDS.gaClientId, value: '111.222' },
       { uuid: KEYCRM_FIELDS.fbp, value: 'fb.1.10.999' },
     ]))
@@ -134,12 +136,13 @@ describe('buildLastTouchUpdate', () => {
     })
 
     expect(update).toEqual({
-      utm_source: 'facebook',
-      utm_medium: 'cpc',
       custom_fields: [
+        { uuid: KEYCRM_FIELDS.lastSource, value: 'facebook' },
+        { uuid: KEYCRM_FIELDS.lastMedium, value: 'cpc' },
         { uuid: KEYCRM_FIELDS.fbclid, value: 'click-b' },
       ],
     })
+    expect(JSON.stringify(update)).not.toContain('utm_')
     expect(JSON.stringify(update)).not.toContain(KEYCRM_FIELDS.firstSource)
     expect(JSON.stringify(update)).not.toContain(KEYCRM_FIELDS.gclid)
   })
@@ -160,37 +163,39 @@ describe('updatePipelineCardLastTouch', () => {
       method: 'PUT',
       headers: expect.objectContaining({ Authorization: 'Bearer secret' }),
       body: JSON.stringify({
-        utm_source: 'facebook',
-        custom_fields: [{ uuid: KEYCRM_FIELDS.fbclid, value: 'click-b' }],
+        custom_fields: [
+          { uuid: KEYCRM_FIELDS.lastSource, value: 'facebook' },
+          { uuid: KEYCRM_FIELDS.fbclid, value: 'click-b' },
+        ],
       }),
     }))
     vi.unstubAllGlobals()
   })
 })
 
-describe('readPipelineCardLeadId', () => {
-  it('reads LD_1003 from the card custom fields', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        data: {
-          id: 15,
-          custom_fields: [{ uuid: KEYCRM_FIELDS.leadId, value: 'abc1234567' }],
-        },
-      }),
-    })
-    vi.stubGlobal('fetch', fetchMock)
-
-    await expect(readPipelineCardLeadId('secret', 15)).resolves.toEqual({
-      ok: true,
+describe('buildChatCardFill', () => {
+  it('renames the chat card and keeps utm off the update', () => {
+    const fill = buildChatCardFill({
       leadId: 'abc1234567',
-    })
-    expect(fetchMock).toHaveBeenCalledWith(
-      `${KEYCRM_API_URL}/15?include=custom_fields`,
-      expect.objectContaining({ method: 'GET' }),
-    )
-    vi.unstubAllGlobals()
+      kind: 'click',
+      channel: 'telegram',
+      lastTouchAt: '2026-11-25T06:00:00.000Z',
+      source: 'footer',
+      locale: 'ua',
+      device: 'mobile',
+      utmSource: 'google',
+      gclid: 'last-click',
+      landingPath: '/?gclid=last-click',
+    }, 518)
+
+    expect(fill.title).toBe('Лід 518')
+    expect(fill.note).toContain('Кнопка: Футер')
+    expect(fill.custom_fields).toEqual(expect.arrayContaining([
+      { uuid: KEYCRM_FIELDS.leadId, value: 'abc1234567' },
+      { uuid: KEYCRM_FIELDS.lastSource, value: 'google' },
+      { uuid: KEYCRM_FIELDS.gclid, value: 'last-click' },
+    ]))
+    expect(JSON.stringify(fill)).not.toContain('utm_source')
   })
 })
 
