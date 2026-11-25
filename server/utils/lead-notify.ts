@@ -34,6 +34,7 @@ const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
   header: 'Шапка',
   cta: 'Нижній CTA',
   segment: 'Блок "Який переїзд вам потрібен"',
+  footer: 'Футер',
 }
 
 const LEAD_DEVICE_LABELS: Record<LeadDevice, string> = {

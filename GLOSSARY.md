@@ -5,8 +5,8 @@ Language for a relocation enquiry, from the website form through the sales pipel
 ## Language
 
 **Lead**:
-A request for a move, either through the website form or as a real message in a messenger. A click on Telegram, WhatsApp, or Viber is not a lead. A later request from the same person is another lead.
-_Avoid_: order, замовлення, click
+A request for a move through the website form, or one click on Telegram, WhatsApp, or Viber on the site per browser and channel within 30 days (another channel, or the same channel after 30 days, is another lead). A call or an email from the site is not a lead, and a message in the messenger does not start another lead.
+_Avoid_: order, замовлення
 
 **Form consent**:
 The checkbox on the lead form. The form cannot be submitted without it. It covers processing that enquiry, including the measurement described in the privacy policy.

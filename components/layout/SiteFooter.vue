@@ -40,7 +40,7 @@
                 <button
                   type="button"
                   class="site-footer__contact-link"
-                  @click="openMessenger(item.channel)"
+                  @click="openMessenger(item.channel, 'footer')"
                 >
                   <UiIcon :name="item.icon" size="sm" class="site-footer__contact-icon" />
                   <span>{{ item.label }}</span>

@@ -1,4 +1,4 @@
-export const CONSENT_POLICY_VERSION = '2026-11-16'
+export const CONSENT_POLICY_VERSION = '2026-11-24'
 
 export const LEAD_TURNSTILE_ACTION = 'lead_submit'
 
@@ -7,6 +7,7 @@ export const LEAD_SOURCES = [
   'header',
   'cta',
   'segment',
+  'footer',
 ] as const
 
 export type LeadSource = (typeof LEAD_SOURCES)[number]
@@ -26,3 +27,7 @@ export const CONTACT_METHODS = [
 ] as const
 
 export type ContactMethod = (typeof CONTACT_METHODS)[number]
+
+export const MESSENGER_LEAD_CHANNELS = ['telegram', 'whatsapp', 'viber'] as const
+
+export type MessengerLeadChannel = (typeof MESSENGER_LEAD_CHANNELS)[number]

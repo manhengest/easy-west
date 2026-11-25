@@ -43,14 +43,16 @@
 
 <script setup lang="ts">
 import type { MessengerChannel } from '~/composables/useContacts'
+import type { LeadSource } from '~/shared/lead-constants'
 
 const props = withDefaults(
   defineProps<{
     channel: MessengerChannel
     label?: string
     appearance?: 'default' | 'on-dark'
+    source?: LeadSource
   }>(),
-  { appearance: 'default', label: undefined },
+  { appearance: 'default', label: undefined, source: 'hero' },
 )
 
 const appearanceClass = computed(() =>
@@ -58,7 +60,10 @@ const appearanceClass = computed(() =>
 )
 
 const { t } = useI18n()
-const { href, revealProtected, open, trackDirectClick } = useMessengerLink(() => props.channel)
+const { href, revealProtected, open, trackDirectClick } = useMessengerLink(
+  () => props.channel,
+  () => props.source,
+)
 
 const opensExternally = computed(() => props.channel !== 'phone')
 

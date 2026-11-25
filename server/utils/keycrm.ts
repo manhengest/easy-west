@@ -1,5 +1,5 @@
 import type { ContactMethod, LeadDevice, LeadSource, LocaleCode } from '~/shared/lead-constants'
-import type { LeadSubmitPayload } from '~/shared/lead-schema'
+import type { LeadSubmitPayload, MessengerLeadPayload } from '~/shared/lead-schema'
 import { KEYCRM_API_ORIGIN, KEYCRM_API_URL, KEYCRM_FIELDS, KEYCRM_PIPELINE_ID, KEYCRM_SOURCE_ID } from './keycrm-map'
 
 export const KEYCRM_PENDING_TITLE = 'Лід'
@@ -21,6 +21,7 @@ const SOURCE_LABELS: Record<LeadSource, string> = {
   header: 'Шапка',
   cta: 'Нижній CTA',
   segment: 'Блок "Який переїзд вам потрібен"',
+  footer: 'Футер',
 }
 
 const DEVICE_LABELS: Record<LeadDevice, string> = {
@@ -126,7 +127,15 @@ function attributionFields(payload: ClickAttribution): KeycrmCustomField[] {
   ].filter((field): field is KeycrmCustomField => field !== null)
 }
 
-function applyUtm(card: KeycrmPipelineCard, payload: ClickAttribution): void {
+interface UtmFields {
+  utm_source?: string
+  utm_medium?: string
+  utm_campaign?: string
+  utm_content?: string
+  utm_term?: string
+}
+
+function applyUtm(card: UtmFields, payload: ClickAttribution): void {
   const utmSource = filled(payload.utmSource)
   const utmMedium = filled(payload.utmMedium)
   const utmCampaign = filled(payload.utmCampaign)
@@ -184,6 +193,67 @@ export function buildPipelineCard(ctx: KeycrmLeadContext): KeycrmPipelineCard {
   applyUtm(card, payload)
 
   return card
+}
+
+function messengerComment(payload: MessengerLeadPayload): string {
+  const lines = [
+    `Кнопка: ${SOURCE_LABELS[payload.source]}`,
+    `Пристрій: ${DEVICE_LABELS[payload.device]}`,
+    filled(payload.referrer) ? `Referrer: ${payload.referrer}` : undefined,
+    filled(payload.landingPath) ? `Сторінка: ${payload.landingPath}` : undefined,
+  ].filter((line): line is string => Boolean(line))
+
+  return lines.join('\n')
+}
+
+export function buildMessengerPipelineCard(payload: MessengerLeadPayload): KeycrmPipelineCard {
+  const customFields = [
+    textField(KEYCRM_FIELDS.leadId, payload.leadId),
+    { uuid: KEYCRM_FIELDS.channel, value: [CONTACT_CHANNEL_VALUES[payload.channel]] },
+    { uuid: KEYCRM_FIELDS.locale, value: [LOCALE_VALUES[payload.locale]] },
+    ...attributionFields(payload),
+  ].filter((field): field is KeycrmCustomField => field !== null)
+
+  const card: KeycrmPipelineCard = {
+    title: KEYCRM_PENDING_TITLE,
+    pipeline_id: KEYCRM_PIPELINE_ID,
+    source_id: KEYCRM_SOURCE_ID,
+    contact: {
+      full_name: 'Заявка з сайту',
+    },
+    custom_fields: customFields,
+    manager_comment: messengerComment(payload),
+  }
+
+  applyUtm(card, payload)
+
+  return card
+}
+
+export interface KeycrmLastTouchUpdate {
+  utm_source?: string
+  utm_medium?: string
+  utm_campaign?: string
+  utm_content?: string
+  utm_term?: string
+  custom_fields?: KeycrmCustomField[]
+}
+
+export function buildLastTouchUpdate(payload: ClickAttribution): KeycrmLastTouchUpdate {
+  const update: KeycrmLastTouchUpdate = {}
+  applyUtm(update, payload)
+  const clickIds = [
+    textField(KEYCRM_FIELDS.gclid, payload.gclid),
+    textField(KEYCRM_FIELDS.gbraid, payload.gbraid),
+    textField(KEYCRM_FIELDS.wbraid, payload.wbraid),
+    textField(KEYCRM_FIELDS.fbclid, payload.fbclid),
+  ].filter((field): field is KeycrmCustomField => field !== null)
+
+  if (clickIds.length > 0) {
+    update.custom_fields = clickIds
+  }
+
+  return update
 }
 
 export function keycrmId(value: unknown): number | null {
@@ -365,6 +435,70 @@ export async function readPipelineCard(
       bookedSent: Boolean(fieldText(fields, marks.bookedField)),
     },
   }
+}
+
+export type PipelineCardLeadIdResult =
+  | { ok: true, leadId: string | null }
+  | { ok: false, status: number }
+
+/** Reads LD_1003 so a messenger last-touch PUT can refuse a foreign card id. */
+export async function readPipelineCardLeadId(
+  apiKey: string,
+  cardId: number,
+): Promise<PipelineCardLeadIdResult> {
+  let response: Response
+  try {
+    response = await keycrmRequest(
+      apiKey,
+      `${KEYCRM_API_URL}/${cardId}?include=custom_fields`,
+      'GET',
+    )
+  }
+  catch {
+    console.error('[keycrm] card lead id read failed', { cardId })
+    return { ok: false, status: 502 }
+  }
+
+  if (response.status === 404) {
+    return { ok: false, status: 404 }
+  }
+  if (!response.ok) {
+    console.error('[keycrm] card lead id read failed', { cardId, status: response.status })
+    return { ok: false, status: response.status }
+  }
+
+  let body: unknown
+  try {
+    body = await response.json()
+  }
+  catch {
+    return { ok: false, status: 502 }
+  }
+
+  const record = unwrapCard(body)
+  if (!record) {
+    return { ok: false, status: 502 }
+  }
+
+  const fields = readCustomFields(record.custom_fields)
+  return { ok: true, leadId: fieldText(fields, KEYCRM_FIELDS.leadId) ?? null }
+}
+
+export async function updatePipelineCardLastTouch(
+  apiKey: string,
+  cardId: number,
+  touch: ClickAttribution,
+): Promise<KeycrmCardResult> {
+  const response = await keycrmRequest(
+    apiKey,
+    `${KEYCRM_API_URL}/${cardId}`,
+    'PUT',
+    buildLastTouchUpdate(touch),
+  )
+  if (!response.ok) {
+    return { ok: false, status: response.status }
+  }
+  return { ok: true, id: cardId }
 }
 
 export async function markAdsEventSent(

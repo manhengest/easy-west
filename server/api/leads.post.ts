@@ -1,3 +1,4 @@
+import { mintLeadId } from '~/shared/lead-id'
 import { leadSubmitSchema, parseLeadPhoneE164 } from '~/shared/lead-schema'
 import type { LeadSubmitPayload } from '~/shared/lead-schema'
 import { notifyLeadChannels } from '../utils/lead-notify'
@@ -64,7 +65,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const receivedAt = new Date().toISOString()
-  const leadId = crypto.randomUUID().replace(/-/g, '').slice(0, 10)
+  const leadId = mintLeadId()
 
   if (!stubToken || isProduction) {
     const notifyResult = await notifyLeadChannels(

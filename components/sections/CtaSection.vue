@@ -18,9 +18,9 @@
         >
           {{ t('cta.submit') }}
         </UiButton>
-        <UiMessengerLink channel="whatsapp" appearance="on-dark" />
-        <UiMessengerLink channel="telegram" appearance="on-dark" />
-        <UiMessengerLink channel="viber" appearance="on-dark" />
+        <UiMessengerLink channel="whatsapp" appearance="on-dark" source="cta" />
+        <UiMessengerLink channel="telegram" appearance="on-dark" source="cta" />
+        <UiMessengerLink channel="viber" appearance="on-dark" source="cta" />
       </div>
     </section>
   </div>

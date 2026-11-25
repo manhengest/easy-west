@@ -14,9 +14,9 @@
             {{ t('hero.messengerLead') }}
           </p>
           <div class="hero__messengers">
-            <UiMessengerLink channel="whatsapp" />
-            <UiMessengerLink channel="telegram" />
-            <UiMessengerLink channel="viber" />
+            <UiMessengerLink channel="whatsapp" source="hero" />
+            <UiMessengerLink channel="telegram" source="hero" />
+            <UiMessengerLink channel="viber" source="hero" />
           </div>
         </div>
         <div v-motion="fadeUp(240)" class="hero__cta">

@@ -10,11 +10,11 @@ import {
 
 describe('lead-constants', () => {
   it('keeps stable enum values', () => {
-    expect(LEAD_SOURCES).toEqual(['hero', 'header', 'cta', 'segment'])
+    expect(LEAD_SOURCES).toEqual(['hero', 'header', 'cta', 'segment', 'footer'])
     expect(LEAD_DEVICES).toEqual(['mobile', 'desktop'])
     expect(LOCALE_CODES).toEqual(['ua', 'ru'])
     expect(CONTACT_METHODS).toEqual(['telegram', 'whatsapp', 'viber', 'phone'])
-    expect(CONSENT_POLICY_VERSION).toBe('2026-11-16')
+    expect(CONSENT_POLICY_VERSION).toBe('2026-11-24')
     expect(LEAD_TURNSTILE_ACTION).toBe('lead_submit')
   })
 })

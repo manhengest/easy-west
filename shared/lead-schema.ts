@@ -5,7 +5,10 @@ import {
   LEAD_DEVICES,
   LEAD_SOURCES,
   LOCALE_CODES,
+  MESSENGER_LEAD_CHANNELS,
 } from './lead-constants'
+import { LEAD_ID_PATTERN } from './lead-id'
+import { isTaggedTouch } from './messenger-lead'
 import { normalizePhoneToE164 } from './phone'
 
 export const leadSourceSchema = z.enum(LEAD_SOURCES)
@@ -104,6 +107,64 @@ export const leadSubmitSchema = z.object({
 })
 
 export type LeadSubmitPayload = z.infer<typeof leadSubmitSchema>
+
+const messengerAttributionFields = {
+  utmSource: z.string().optional(),
+  utmMedium: z.string().optional(),
+  utmCampaign: z.string().optional(),
+  utmContent: z.string().optional(),
+  utmTerm: z.string().optional(),
+  gclid: z.string().optional(),
+  gbraid: z.string().optional(),
+  wbraid: z.string().optional(),
+  fbclid: z.string().optional(),
+  gaClientId: z.string().optional(),
+  fbp: z.string().optional(),
+  referrer: z.string().optional(),
+  landingPath: z.string().optional(),
+  firstUtmSource: z.string().optional(),
+  firstUtmMedium: z.string().optional(),
+  firstUtmCampaign: z.string().optional(),
+  firstUtmContent: z.string().optional(),
+  firstUtmTerm: z.string().optional(),
+  firstGclid: z.string().optional(),
+  firstGbraid: z.string().optional(),
+  firstWbraid: z.string().optional(),
+  firstFbclid: z.string().optional(),
+  firstTouchedAt: z.string().optional(),
+  firstLandingPath: z.string().optional(),
+}
+
+export const messengerLeadSchema = z.object({
+  leadId: z.string().regex(LEAD_ID_PATTERN),
+  channel: z.enum(MESSENGER_LEAD_CHANNELS),
+  source: leadSourceSchema,
+  locale: localeCodeSchema,
+  device: leadDeviceSchema,
+  ...messengerAttributionFields,
+})
+
+export type MessengerLeadPayload = z.infer<typeof messengerLeadSchema>
+
+export const messengerLeadTouchSchema = z.object({
+  cardId: z.number().int().positive(),
+  leadId: z.string().regex(LEAD_ID_PATTERN),
+  utmSource: z.string().optional(),
+  utmMedium: z.string().optional(),
+  utmCampaign: z.string().optional(),
+  utmContent: z.string().optional(),
+  utmTerm: z.string().optional(),
+  gclid: z.string().optional(),
+  gbraid: z.string().optional(),
+  wbraid: z.string().optional(),
+  fbclid: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (!isTaggedTouch(data)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'untagged', path: ['cardId'] })
+  }
+})
+
+export type MessengerLeadTouch = z.infer<typeof messengerLeadTouchSchema>
 
 export function parseLeadPhoneE164(payload: LeadSubmitPayload): string | null {
   if (payload.contactMethod !== 'phone') {

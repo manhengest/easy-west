@@ -1,4 +1,4 @@
-import type { ContactMethod } from './lead-constants'
+import type { ContactMethod, MessengerLeadChannel } from './lead-constants'
 
 export interface LeadMessageFields {
   from: string
@@ -114,6 +114,16 @@ export function buildMessengerDeeplink(
   }
 }
 
-export function isMessengerContactMethod(method: ContactMethod): boolean {
+const CLICK_CHANNEL_LABEL: Record<MessengerLeadChannel, string> = {
+  telegram: 'Telegram',
+  whatsapp: 'WhatsApp',
+  viber: 'Viber',
+}
+
+export function buildMessengerClickMessage(leadId: string, channel: MessengerLeadChannel): string {
+  return `${leadId}\n${CLICK_CHANNEL_LABEL[channel]}`
+}
+
+export function isMessengerContactMethod(method: ContactMethod): method is MessengerLeadChannel {
   return method === 'telegram' || method === 'whatsapp' || method === 'viber'
 }
