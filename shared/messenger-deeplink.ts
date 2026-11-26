@@ -123,8 +123,21 @@ export function buildMessengerDeeplink(
   }
 }
 
-export function buildMessengerClickMessage(leadId: string, leadNumberLabel: string): string {
-  return leadNumberLine(leadNumberLabel, leadId)
+export interface MessengerClickMessageLines {
+  greeting: string
+  serviceField: string
+  leadNumber: string
+}
+
+export function buildMessengerClickMessage(
+  leadId: string,
+  lines: MessengerClickMessageLines,
+): string {
+  return [
+    lines.greeting,
+    lines.serviceField,
+    leadNumberLine(lines.leadNumber, leadId),
+  ].join('\n')
 }
 
 export function isMessengerContactMethod(method: ContactMethod): method is MessengerLeadChannel {

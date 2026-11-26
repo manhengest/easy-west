@@ -13,6 +13,22 @@ mockNuxtImport('useGtm', () => () => ({
   enabled: false,
 }))
 
+function clickDraft(leadId: string): string {
+  return [
+    'Добрий день! Хочу замовити переїзд.',
+    '--- службове поле ---',
+    `Номер заявки: ${leadId}`,
+  ].join('\n')
+}
+
+function leadIdFromDraft(text: string): string {
+  const match = text.match(/Номер заявки: ([0-9a-f]{10})$/)
+  if (!match?.[1]) {
+    throw new Error(`lead number missing in draft: ${text}`)
+  }
+  return match[1]
+}
+
 describe('messenger click lead', () => {
   beforeEach(() => {
     pushEvent.mockReset()
@@ -24,15 +40,14 @@ describe('messenger click lead', () => {
     vi.spyOn(window, 'open').mockReturnValue({ closed: false } as Window)
   })
 
-  it('opens the chat with a lead number and posts every click', async () => {
+  it('opens the chat with greeting, service field, lead number and posts every click', async () => {
     const { openMessenger } = await mountComposable(() => useMessengerActions())
     openMessenger('telegram', 'footer')
 
     const href = String(vi.mocked(window.open).mock.calls[0]?.[0])
     const text = new URL(href).searchParams.get('text') ?? ''
-    const leadId = text.replace('Номер заявки: ', '')
-    expect(text).toBe(`Номер заявки: ${leadId}`)
-    expect(leadId).toMatch(/^[0-9a-f]{10}$/)
+    const leadId = leadIdFromDraft(text)
+    expect(text).toBe(clickDraft(leadId))
     expect(fetchMock).toHaveBeenCalledWith('/api/messenger-leads', expect.objectContaining({
       method: 'POST',
       body: expect.objectContaining({
@@ -54,7 +69,7 @@ describe('messenger click lead', () => {
       method: 'POST',
       body: expect.objectContaining({ leadId, channel: 'telegram' }),
     }))
-    expect(second).toBe(`Номер заявки: ${leadId}`)
+    expect(second).toBe(clickDraft(leadId))
   })
 
   it('retries the same lead when the KeyCRM card id is still missing', async () => {
@@ -99,7 +114,7 @@ describe('messenger click lead', () => {
       }),
     }))
     const href = String(vi.mocked(window.open).mock.calls.at(-1)?.[0])
-    expect(new URL(href).searchParams.get('text')).toBe('Номер заявки: abc1234567')
+    expect(new URL(href).searchParams.get('text')).toBe(clickDraft('abc1234567'))
   })
 
   it('does not post a card for a phone click', async () => {

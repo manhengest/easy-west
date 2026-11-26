@@ -46,17 +46,27 @@ describe('buildLeadMessage', () => {
 })
 
 describe('buildMessengerClickMessage', () => {
-  it('puts the lead number into the chat draft, without a route', () => {
-    const message = buildMessengerClickMessage('abc1234567', 'Номер заявки:')
-    expect(message).toBe('Номер заявки: abc1234567')
+  const clickLines = {
+    greeting: 'Добрий день! Хочу замовити переїзд.',
+    serviceField: '--- службове поле ---',
+    leadNumber: 'Номер заявки:',
+  }
+
+  it('builds greeting, service field, and lead number without a route', () => {
+    const message = buildMessengerClickMessage('abc1234567', clickLines)
+    expect(message).toBe([
+      'Добрий день! Хочу замовити переїзд.',
+      '--- службове поле ---',
+      'Номер заявки: abc1234567',
+    ].join('\n'))
 
     const href = buildMessengerDeeplink('whatsapp', message, links)
     expect(href).toBe(`https://wa.me/380933218899?text=${encodeURIComponent(message)}`)
     expect(href).not.toContain('Kyiv')
   })
 
-  it('puts the same lead number into the Telegram text and the Viber draft', () => {
-    const message = buildMessengerClickMessage('abc1234567', 'Номер заявки:')
+  it('puts the same draft into the Telegram text and the Viber draft', () => {
+    const message = buildMessengerClickMessage('abc1234567', clickLines)
     expect(buildMessengerDeeplink('telegram', message, links))
       .toContain(`text=${encodeURIComponent(message)}`)
     expect(buildMessengerDeeplink('viber', message, links))

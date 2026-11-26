@@ -120,7 +120,11 @@ export function useMessengerActions() {
       cookie.value = decision.store
     }
 
-    const message = buildMessengerClickMessage(decision.leadId, t('lead.message.leadNumber'))
+    const message = buildMessengerClickMessage(decision.leadId, {
+      greeting: t('lead.message.greeting'),
+      serviceField: t('lead.message.serviceField'),
+      leadNumber: t('lead.message.leadNumber'),
+    })
     const href = buildMessengerDeeplink(channel, message, {
       phone: links.value.phone,
       whatsapp: links.value.whatsapp,
